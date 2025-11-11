@@ -1,3 +1,3 @@
-module github.com/JrMarcco/relay
+module github.com/JrMarcco/hermet
 
 go 1.25
