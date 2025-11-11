@@ -1,8 +1,9 @@
 package domain
 
+// Message 对应网关消息中的 body 的具体格式。
 type Message struct {
 	Id  uint64 `json:"id"`
-	Mid uint64 `json:"mid"` // 这里指的是 websocket 消息的唯一 id
+	Mid uint64 `json:"mid"` // 这里指的是网关消息的唯一 id
 	Sid uint64 `json:"sid"` // sender id
 	Cid uint64 `json:"cid"` // channel id
 
