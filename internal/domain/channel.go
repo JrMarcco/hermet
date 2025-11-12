@@ -11,7 +11,7 @@ const (
 // 频道可以是单聊/群聊。
 // 所有的通信都可以看作是发送到特定的频道，频道中的所有人都会收到消息。
 type Channel struct {
-	Id     uint64      `json:"id"`
+	ID     uint64      `json:"id"`
 	Name   string      `json:"name"`
 	Type   ChannelType `json:"type"`
 	Avatar string      `json:"avatar"`
@@ -21,11 +21,11 @@ type Channel struct {
 
 // ChannelMember 是频道中的成员。
 type ChannelMember struct {
-	Id       uint64 `json:"id"`
+	ID       uint64 `json:"id"`
 	Nickname string `json:"nickname"`
 	Note     string `json:"note"`
 	Avatar   string `json:"avatar"`
 	Priority int    `json:"priority"`
 	Mute     bool   `json:"mute"`
-	JoinAt   int64  `json:"join_at"`
+	JoinAt   int64  `json:"joinAt"`
 }
