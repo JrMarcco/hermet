@@ -2,6 +2,11 @@ package domain
 
 type ChannelType string
 
+const (
+	ChannelTypeSingle = ChannelType("single")
+	ChannelTypeGroup  = ChannelType("group")
+)
+
 // Channel 是整个 im 的核心抽象，表示一个聊天频道。
 // 频道可以是单聊/群聊。
 // 所有的通信都可以看作是发送到特定的频道，频道中的所有人都会收到消息。
