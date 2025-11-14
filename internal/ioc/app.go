@@ -1,1 +1,100 @@
 package ioc
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
+
+var AppFxOpt = fx.Module(
+	"app",
+	fx.Provide(
+		gin.Default,
+	),
+	fx.Invoke(InitApp),
+)
+
+type App struct {
+	svr    *http.Server
+	logger *zap.Logger
+}
+
+func (app *App) Start() error {
+	go func() {
+		if err := app.svr.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			app.logger.Fatal("[hermet-ioc] failed to start http server", zap.Error(err))
+		}
+	}()
+
+	return nil
+}
+
+func (app *App) Stop(ctx context.Context) error {
+	app.logger.Info("[hermet-ioc] stopping http server ...")
+	if err := app.svr.Shutdown(ctx); err != nil {
+		app.logger.Error("[hermet-ioc] failed to shutdown http server", zap.Error(err))
+		return err
+	}
+
+	app.logger.Info("[hermet-ioc] http server stopped")
+	return nil
+}
+
+type appFxParams struct {
+	fx.In
+
+	Engine *gin.Engine
+	Logger *zap.Logger
+
+	Lifecycle fx.Lifecycle
+}
+
+func InitApp(params appFxParams) *App {
+	cfg := loadWebConfig()
+	svr := &http.Server{
+		Addr:              cfg.Addr,
+		Handler:           params.Engine.Handler(),
+		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
+		IdleTimeout:       cfg.IdleTimeout,
+	}
+
+	app := &App{
+		svr:    svr,
+		logger: params.Logger,
+	}
+
+	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(_ context.Context) error {
+			return app.Start()
+		},
+		OnStop: func(ctx context.Context) error {
+			return app.Stop(ctx)
+		},
+	})
+
+	return app
+}
+
+type webConfig struct {
+	Addr              string        `mapstructure:"addr"`
+	ReadHeaderTimeout time.Duration `mapstructure:"read_header_timeout"` // 读取请求头超时，防止 Slowloris 攻击
+	ReadTimeout       time.Duration `mapstructure:"read_timeout"`        // 读取整个请求超时，IM 请求通常较小
+	WriteTimeout      time.Duration `mapstructure:"write_timeout"`       // 写响应超时，历史记录数据量可能较大
+	IdleTimeout       time.Duration `mapstructure:"idle_timeout"`        // Keep-Alive 空闲超时，IM 客户端会频繁请求
+}
+
+func loadWebConfig() *webConfig {
+	cfg := &webConfig{}
+	if err := viper.UnmarshalKey("hermet.web", cfg); err != nil {
+		panic(err)
+	}
+	return cfg
+}
