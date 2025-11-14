@@ -19,6 +19,9 @@ func main() {
 
 		// 初始化 zap.logger。
 		ioc.LoggerFxOpt,
+
+		// 初始化 mongo db client。
+		ioc.MongoFxOpt,
 	).Run()
 }
 

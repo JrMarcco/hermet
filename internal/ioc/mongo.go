@@ -1,0 +1,104 @@
+package ioc
+
+import (
+	"context"
+	"time"
+
+	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
+
+var MongoFxOpt = fx.Module("mongo", fx.Provide(InitMongo))
+
+type mongoFxParams struct {
+	fx.In
+
+	Logger    *zap.Logger
+	Lifecycle fx.Lifecycle
+}
+
+func InitMongo(params mongoFxParams) *mongo.Client {
+	type config struct {
+		URI     string `mapstructure:"uri"`
+		AppName string `mapstructure:"app_name"`
+
+		AuthSource string `mapstructure:"auth_source"`
+		Username   string `mapstructure:"username"`
+		Password   string `mapstructure:"password"`
+
+		MaxPoolSize            uint64 `mapstructure:"max_pool_size"`
+		MaxConnIdleTime        int    `mapstructure:"max_conn_idle_time"`
+		ConnectTimeout         int    `mapstructure:"connect_timeout"`
+		ServerSelectionTimeout int    `mapstructure:"server_selection_timeout"`
+
+		StartupTimeout  int `mapstructure:"startup_timeout"`
+		ShutdownTimeout int `mapstructure:"shutdown_timeout"`
+	}
+
+	cfg := config{}
+	if err := viper.UnmarshalKey("mongo", &cfg); err != nil {
+		panic(err)
+	}
+
+	clientOptions := options.Client().
+		ApplyURI(cfg.URI).
+		SetAppName(cfg.AppName).
+		SetMaxPoolSize(cfg.MaxPoolSize).
+		SetMaxConnIdleTime(time.Duration(cfg.MaxConnIdleTime) * time.Millisecond).
+		SetConnectTimeout(time.Duration(cfg.ConnectTimeout) * time.Millisecond).
+		SetServerSelectionTimeout(time.Duration(cfg.ServerSelectionTimeout) * time.Millisecond)
+
+	if cfg.Username != "" {
+		cred := options.Credential{Username: cfg.Username, Password: cfg.Password}
+		if cfg.AuthSource != "" {
+			cred.AuthSource = cfg.AuthSource
+		}
+		clientOptions.SetAuth(cred)
+	}
+
+	client, err := mongo.Connect(clientOptions)
+	if err != nil {
+		panic(err)
+	}
+
+	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			startupCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.StartupTimeout)*time.Millisecond)
+			defer cancel()
+
+			err := client.Ping(startupCtx, nil)
+			if err != nil {
+				return err
+			}
+
+			pingCtx, pingCancel := context.WithTimeout(ctx, time.Duration(cfg.ServerSelectionTimeout)*time.Millisecond)
+			defer pingCancel()
+
+			if err := client.Ping(pingCtx, readpref.Primary()); err != nil {
+				return err
+			}
+
+			params.Logger.Info("[hermet-ioc] successfully connected to mongo", zap.String("uri", cfg.URI))
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			stopCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.ShutdownTimeout)*time.Millisecond)
+			defer cancel()
+
+			err := client.Disconnect(stopCtx)
+			if err != nil {
+				params.Logger.Error("[hermet-ioc] failed to disconnect from mongo", zap.Error(err))
+				return err
+			}
+
+			params.Logger.Info("[hermet-ioc] successfully disconnected from mongo")
+			return nil
+		},
+	})
+
+	return client
+}
