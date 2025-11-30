@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
+	webjwt "github.com/JrMarcco/hermet/internal/api/jwt"
 	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	webjwt "github.com/JrMarcco/hermet/internal/web/jwt"
 	"github.com/JrMarcco/jit/xjwt"
 	"github.com/JrMarcco/jit/xset"
 	"github.com/gin-gonic/gin"

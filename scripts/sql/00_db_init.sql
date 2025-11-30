@@ -1,0 +1,2 @@
+-- use pg sql
+CREATE DATABASE hermet WITH ENCODING 'UTF8';

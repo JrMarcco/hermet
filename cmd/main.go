@@ -20,6 +20,9 @@ func main() {
 		// 初始化 zap.logger。
 		ioc.LoggerFxOpt,
 
+		// 初始化 db。
+		ioc.DBFxOpt,
+
 		// 初始化 mongo db client。
 		ioc.MongoFxOpt,
 
@@ -34,6 +37,9 @@ func main() {
 
 		// 初始化 middleware。
 		ioc.MiddlewareBuilderOpt,
+
+		// 初始化 web。
+		ioc.APIFxOpt,
 
 		// 初始化 app。
 		ioc.AppFxOpt,

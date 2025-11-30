@@ -1,12 +1,15 @@
 package domain
 
-type User struct {
+type BizUser struct {
 	ID       uint64 `json:"id"`
-	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+	Mobile   string `json:"mobile"`
 	Avatar   string `json:"avatar"`
-	Token    string `json:"token"`
-	CreateAt int64  `json:"createAt"`
-	UpdateAt int64  `json:"updateAt"`
+	Passwd   string `json:"passwd"`
+	Nickname string `json:"nickname"`
+
+	CreateAt int64 `json:"createAt"`
+	UpdateAt int64 `json:"updateAt"`
 
 	ReadRecords ChannelReadRecords `json:"readRecords"`
 }

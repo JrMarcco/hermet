@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -49,6 +50,9 @@ func (app *App) Stop(ctx context.Context) error {
 type appFxParams struct {
 	fx.In
 
+	Builders   []xgin.HandlerFuncBuilder `group:"api_middleware"`
+	Registries []xgin.RouteRegistry      `group:"api_registry"`
+
 	Engine *gin.Engine
 	Logger *zap.Logger
 
@@ -57,6 +61,16 @@ type appFxParams struct {
 
 func InitApp(params appFxParams) *App {
 	cfg := loadWebConfig()
+
+	// 注册 Middleware ( AOP )。
+	if len(params.Builders) > 0 {
+		middlewares := make([]gin.HandlerFunc, 0, len(params.Builders))
+		for _, builder := range params.Builders {
+			middlewares = append(middlewares, builder.Build())
+		}
+		params.Engine.Use(middlewares...)
+	}
+
 	svr := &http.Server{
 		Addr:              cfg.Addr,
 		Handler:           params.Engine.Handler(),
@@ -69,6 +83,12 @@ func InitApp(params appFxParams) *App {
 	app := &App{
 		svr:    svr,
 		logger: params.Logger,
+	}
+
+	if len(params.Registries) > 0 {
+		for _, registry := range params.Registries {
+			registry.Register(params.Engine)
+		}
 	}
 
 	params.Lifecycle.Append(fx.Hook{

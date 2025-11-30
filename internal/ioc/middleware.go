@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	webjwt "github.com/JrMarcco/hermet/internal/api/jwt"
 	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/JrMarcco/hermet/internal/pkg/xgin/middleware"
-	webjwt "github.com/JrMarcco/hermet/internal/web/jwt"
 	"github.com/JrMarcco/jit/xjwt"
 	"github.com/JrMarcco/jit/xset"
 	"github.com/spf13/viper"
@@ -19,8 +19,16 @@ import (
 var MiddlewareBuilderOpt = fx.Module(
 	"middleware",
 	fx.Provide(
-		initCorsBuilder,
-		initJwtBuilder,
+		fx.Annotate(
+			initCorsBuilder,
+			fx.As(new(xgin.HandlerFuncBuilder)),
+			fx.ResultTags(`group:"api_middleware"`),
+		),
+		fx.Annotate(
+			initJwtBuilder,
+			fx.As(new(xgin.HandlerFuncBuilder)),
+			fx.ResultTags(`group:"api_middleware"`),
+		),
 	),
 )
 
@@ -53,20 +61,20 @@ func initCorsBuilder() *middleware.CorsBuilder {
 	return builder
 }
 
-type jwtBuilderParams struct {
+type jwtBuilderFxParams struct {
 	fx.In
 
 	Handler   webjwt.Handler
 	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
 }
 
-func initJwtBuilder(params jwtBuilderParams) *middleware.JwtBuilder {
+func initJwtBuilder(params jwtBuilderFxParams) *middleware.JwtBuilder {
 	var ignores []string
 	if err := viper.UnmarshalKey("ignores", &ignores); err != nil {
 		panic(err)
 	}
 
-	ts, err := xset.NewTreeSet[string](strings.Compare)
+	ts, err := xset.NewTreeSet(strings.Compare)
 	if err != nil {
 		panic(err)
 	}

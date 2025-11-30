@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -26,11 +27,11 @@ func (h *RedisJwtHandler) ExtractAccessToken(ctx *gin.Context) string {
 	return strings.TrimPrefix(token, "Bearer ")
 }
 
-func (h *RedisJwtHandler) CreateSession(ctx *gin.Context, sid string, uid uint64) error {
+func (h *RedisJwtHandler) CreateSession(ctx context.Context, sid string, uid uint64) error {
 	return h.rdb.Set(ctx, h.key(sid), uid, h.expiration).Err()
 }
 
-func (h *RedisJwtHandler) CheckSession(ctx *gin.Context, sid string, uid uint64) error {
+func (h *RedisJwtHandler) CheckSession(ctx context.Context, sid string, uid uint64) error {
 	storedUID, err := h.rdb.Get(ctx, h.key(sid)).Uint64()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -44,11 +45,11 @@ func (h *RedisJwtHandler) CheckSession(ctx *gin.Context, sid string, uid uint64)
 	return nil
 }
 
-func (h *RedisJwtHandler) RefreshSession(ctx *gin.Context, sid string) error {
+func (h *RedisJwtHandler) RefreshSession(ctx context.Context, sid string) error {
 	return h.rdb.Expire(ctx, h.key(sid), h.expiration).Err()
 }
 
-func (h *RedisJwtHandler) ClearSession(ctx *gin.Context, sid string) error {
+func (h *RedisJwtHandler) ClearSession(ctx context.Context, sid string) error {
 	return h.rdb.Del(ctx, h.key(sid)).Err()
 }
 
