@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/JrMarcco/hermet/internal/pkg/xmq/consumer"
@@ -18,7 +17,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var KafkaFxOpt = fx.Module("kafka", fx.Provide(InitKafka))
+var KafkaFxOpt = fx.Module("kafka", fx.Provide(initKafka))
 
 type kafkaFxResult struct {
 	fx.Out
@@ -34,8 +33,8 @@ type kafkaFxParams struct {
 	Lifecycle fx.Lifecycle
 }
 
-func InitKafka(params kafkaFxParams) kafkaFxResult {
-	cfg := loadKafkaConfig(params.Logger)
+func initKafka(params kafkaFxParams) kafkaFxResult {
+	cfg := loadKafkaConfig()
 
 	// 配置 TLS。
 	tlsConfig, err := configureKafkaTLS(cfg.TLS, params.Logger)
@@ -73,7 +72,7 @@ func InitKafka(params kafkaFxParams) kafkaFxResult {
 	}
 
 	params.Logger.Info(
-		"[synp-ioc] successfully created kafka writer",
+		"[synp-ioc-kafka] successfully created kafka writer",
 		zap.Strings("brokers", cfg.Brokers),
 		zap.String("compression", cfg.Producer.Compression),
 		zap.Int("required_acks", cfg.Producer.RequiredAcks),
@@ -107,7 +106,7 @@ func InitKafka(params kafkaFxParams) kafkaFxResult {
 		})
 
 		params.Logger.Info(
-			"[synp-ioc] created kafka reader",
+			"[synp-ioc-kafka] created kafka reader",
 			zap.Strings("brokers", cfg.Brokers),
 			zap.String("topic", topic),
 			zap.String("group_id", groupId),
@@ -120,10 +119,10 @@ func InitKafka(params kafkaFxParams) kafkaFxResult {
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
 			if err := writer.Close(); err != nil {
-				params.Logger.Error("[synp-ioc] failed to close kafka writer", zap.Error(err))
+				params.Logger.Error("[synp-ioc-kafka] failed to close kafka writer", zap.Error(err))
 				return fmt.Errorf("failed to close kafka writer: %w", err)
 			}
-			params.Logger.Info("[synp-ioc] kafka writer closed")
+			params.Logger.Info("[synp-ioc-kafka] kafka writer closed")
 			return nil
 		},
 	})
@@ -176,62 +175,12 @@ type kafkaSaslConfig struct {
 }
 
 // loadKafkaConfig 加载 Kafka 配置。
-func loadKafkaConfig(logger *zap.Logger) *kafkaConfig {
-	// 设置默认值。
-	cfg := &kafkaConfig{
-		Producer: defaultProducerConfig(),
-		Consumer: defaultConsumerConfig(),
-	}
-
+func loadKafkaConfig() *kafkaConfig {
+	cfg := &kafkaConfig{}
 	if err := viper.UnmarshalKey("kafka", cfg); err != nil {
-		logger.Error("[synp-ioc] failed to unmarshal kafka config", zap.Error(err))
 		panic(fmt.Errorf("failed to unmarshal kafka config: %w", err))
 	}
 	return cfg
-}
-
-// defaultProducerConfig 默认 Producer 配置。
-func defaultProducerConfig() kafkaProducerConfig {
-	const (
-		defaultRequiredAcks      = -1                    // all
-		defaultCompression       = "snappy"              // 使用 snappy 压缩
-		defaultMaxMessageBytes   = 1024000               // 1MB
-		defaultRetryMax          = 3                     // 最多重试 3 次
-		defaultBatchSize         = 100                   // 批量大小 100
-		defaultBatchTimeout      = 10 * time.Millisecond // 批量超时 10ms
-		defaultWriteTimeout      = 10 * time.Second      // 写入超时 10s
-		defaultIdempotentEnabled = true                  // 启用幂等性
-	)
-	return kafkaProducerConfig{
-		RequiredAcks:      defaultRequiredAcks,
-		Compression:       defaultCompression,
-		MaxMessageBytes:   defaultMaxMessageBytes,
-		RetryMax:          defaultRetryMax,
-		BatchSize:         defaultBatchSize,
-		BatchTimeout:      defaultBatchTimeout,
-		WriteTimeout:      defaultWriteTimeout,
-		IdempotentEnabled: defaultIdempotentEnabled,
-	}
-}
-
-// defaultConsumerConfig 默认 Consumer 配置。
-func defaultConsumerConfig() kafkaConsumerConfig {
-	const (
-		defaultReadTimeout    = 10 * time.Second       // 读取超时 10s
-		defaultCommitInterval = 1 * time.Second        // 每秒提交一次
-		defaultStartOffset    = -1                     // 从最新消息开始（kafka.LastOffset）
-		defaultMinBytes       = 1                      // 最小 1 字节
-		defaultMaxBytes       = 10e6                   // 最大 10MB
-		defaultMaxWait        = 500 * time.Millisecond // 最大等待 500ms
-	)
-	return kafkaConsumerConfig{
-		ReadTimeout:    defaultReadTimeout,
-		CommitInterval: defaultCommitInterval,
-		StartOffset:    defaultStartOffset,
-		MinBytes:       defaultMinBytes,
-		MaxBytes:       defaultMaxBytes,
-		MaxWait:        defaultMaxWait,
-	}
 }
 
 // configureKafkaTLS 配置 TLS。
@@ -245,29 +194,14 @@ func configureKafkaTLS(tlsCfg kafkaTLSConfig, logger *zap.Logger) (*tls.Config, 
 		InsecureSkipVerify: false, // 强制 TLS 认证
 	}
 
-	// 加载 CA 证书（用于验证服务器的证书是否可信）。
-	caCert, err := os.ReadFile(tlsCfg.CAFile)
-	if err != nil {
-		logger.Error(
-			"[synp-ioc] failed to load CA file for kafka",
-			zap.String("ca_file", tlsCfg.CAFile),
-			zap.Error(err),
-		)
-		return nil, fmt.Errorf("failed to load CA file for kafka: %w", err)
-	}
-
 	caCertPool := x509.NewCertPool()
-	if !caCertPool.AppendCertsFromPEM(caCert) {
-		logger.Error("[synp-ioc] failed to append CA certificate to pool for kafka")
+	if !caCertPool.AppendCertsFromPEM([]byte(tlsCfg.CAFile)) {
+		logger.Error("[synp-ioc-kafka] failed to append CA certificate to pool for kafka")
 		return nil, fmt.Errorf("failed to append CA certificate to pool for kafka")
 	}
-
 	tlsConf.RootCAs = caCertPool
 
-	logger.Info(
-		"[synp-ioc] successfully configured TLS for kafka",
-		zap.String("ca_file", tlsCfg.CAFile),
-	)
+	logger.Info("[synp-ioc-kafka] successfully configured TLS for kafka")
 
 	return tlsConf, nil
 }
@@ -281,7 +215,7 @@ func configureKafkaSasl(saslCfg kafkaSaslConfig, logger *zap.Logger) (sasl.Mecha
 	mechanism, err := scram.Mechanism(scram.SHA256, saslCfg.Username, saslCfg.Password)
 	if err != nil {
 		logger.Error(
-			"[synp-ioc] failed to create SASL mechanism",
+			"[synp-ioc-kafka] failed to create SASL mechanism",
 			zap.String("username", saslCfg.Username),
 			zap.Error(err),
 		)
@@ -289,7 +223,7 @@ func configureKafkaSasl(saslCfg kafkaSaslConfig, logger *zap.Logger) (sasl.Mecha
 	}
 
 	logger.Info(
-		"[synp-ioc] successfully configured SASL/SCRAM-SHA-256 for kafka",
+		"[synp-ioc-kafka] successfully configured SASL/SCRAM-SHA-256 for kafka",
 		zap.String("username", saslCfg.Username),
 	)
 

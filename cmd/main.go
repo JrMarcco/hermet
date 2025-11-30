@@ -22,6 +22,21 @@ func main() {
 
 		// 初始化 mongo db client。
 		ioc.MongoFxOpt,
+
+		// 初始化 redis client。
+		ioc.RedisFxOpt,
+
+		// 初始化 kafka client。
+		ioc.KafkaFxOpt,
+
+		// 初始化 jwt manager。
+		ioc.JwtManagerOpt,
+
+		// 初始化 middleware。
+		ioc.MiddlewareBuilderOpt,
+
+		// 初始化 app。
+		ioc.AppFxOpt,
 	).Run()
 }
 
