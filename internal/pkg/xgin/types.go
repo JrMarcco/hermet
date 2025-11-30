@@ -21,9 +21,9 @@ type R struct {
 }
 
 type AuthUser struct {
-	Sid string `json:"sid"` // session id
-	Bid uint64 `json:"bid"` // biz id
-	Uid uint64 `json:"uid"` // user id
+	SID string `json:"sid"` // session id
+	BID uint64 `json:"bid"` // biz id
+	UID uint64 `json:"uid"` // user id
 }
 
 // HandlerFuncBuilder 是构建 gin.HandlerFunc 的接口。

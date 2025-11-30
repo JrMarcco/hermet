@@ -31,14 +31,14 @@ func (h *RedisJwtHandler) CreateSession(ctx *gin.Context, sid string, uid uint64
 }
 
 func (h *RedisJwtHandler) CheckSession(ctx *gin.Context, sid string, uid uint64) error {
-	storedUid, err := h.rdb.Get(ctx, h.key(sid)).Uint64()
+	storedUID, err := h.rdb.Get(ctx, h.key(sid)).Uint64()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return errors.New("been signed out")
 		}
 		return err
 	}
-	if storedUid != uid {
+	if storedUID != uid {
 		return errors.New("session user mismatch")
 	}
 	return nil

@@ -65,17 +65,18 @@ func (b *CorsBuilder) AllowOriginFunc(allowOriginFunc func(origin string) bool) 
 }
 
 func NewCorsBuilder() *CorsBuilder {
+	const (
+		defaultMaxAge = 12 * time.Hour
+		localhost     = "http://localhost"
+	)
 	return &CorsBuilder{
 		allowCredentials: false,
 		allowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodConnect, http.MethodOptions, http.MethodTrace},
 		allowHeaders:     []string{"Content-Length", "Content-Type", "Authorization", "Accept", "Origin"},
 		exposeHeaders:    []string{"Origin", "Content-Length", "Content-Type"},
-		maxAge:           12 * time.Hour,
+		maxAge:           defaultMaxAge,
 		allowOriginFunc: func(origin string) bool {
-			if strings.HasPrefix(origin, "http://localhost") {
-				return true
-			}
-			return false
+			return strings.HasPrefix(origin, localhost)
 		},
 	}
 }
