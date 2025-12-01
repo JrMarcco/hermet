@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap/exp/zapslog"
 )
 
-func newLogger(lifecycle fx.Lifecycle) *zap.Logger {
+func newZapLogger(lifecycle fx.Lifecycle) (*zap.Logger, error) {
 	type config struct {
 		Env string `mapstructure:"env"`
 	}
 
 	cfg := config{}
 	if err := viper.UnmarshalKey("project", &cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var err error
@@ -31,7 +31,7 @@ func newLogger(lifecycle fx.Lifecycle) *zap.Logger {
 	}
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// 初始化 slog
@@ -44,5 +44,5 @@ func newLogger(lifecycle fx.Lifecycle) *zap.Logger {
 		},
 	})
 
-	return logger
+	return logger, nil
 }

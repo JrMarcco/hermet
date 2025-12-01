@@ -17,16 +17,11 @@ type jwtFxResult struct {
 }
 
 func newJwtManager() (jwtFxResult, error) {
-	cfg, err := loadJwtConfig()
+	atManager, err := newAccessTokenManager()
 	if err != nil {
 		return jwtFxResult{}, err
 	}
-
-	atManager, err := newAccessTokenManager(cfg)
-	if err != nil {
-		return jwtFxResult{}, err
-	}
-	rtManager, err := newRefreshTokenManager(cfg)
+	rtManager, err := newRefreshTokenManager()
 	if err != nil {
 		return jwtFxResult{}, err
 	}
@@ -38,10 +33,15 @@ func newJwtManager() (jwtFxResult, error) {
 }
 
 // newAccessTokenManager 创建用于 Access Token 的 Manager
-func newAccessTokenManager(cfg *jwtConfig) (xjwt.Manager[xgin.AuthUser], error) {
+func newAccessTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
+	cfg, err := loadJwtConfig("jwt.access")
+	if err != nil {
+		return nil, err
+	}
+
 	claimsCfg := xjwt.NewClaimsConfig(
-		xjwt.WithExpiration(cfg.Access.Expiration),
-		xjwt.WithIssuer(cfg.Access.Issuer),
+		xjwt.WithExpiration(cfg.Expiration),
+		xjwt.WithIssuer(cfg.Issuer),
 	)
 
 	manager, err := xjwt.NewEd25519ManagerBuilder[xgin.AuthUser](cfg.Private, cfg.Public).
@@ -54,10 +54,15 @@ func newAccessTokenManager(cfg *jwtConfig) (xjwt.Manager[xgin.AuthUser], error) 
 }
 
 // newRefreshTokenManager 创建用于 Refresh Token 的 Manager
-func newRefreshTokenManager(cfg *jwtConfig) (xjwt.Manager[xgin.AuthUser], error) {
+func newRefreshTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
+	cfg, err := loadJwtConfig("jwt.refresh")
+	if err != nil {
+		return nil, err
+	}
+
 	claimsCfg := xjwt.NewClaimsConfig(
-		xjwt.WithExpiration(cfg.Access.Expiration),
-		xjwt.WithIssuer(cfg.Refresh.Issuer),
+		xjwt.WithExpiration(cfg.Expiration),
+		xjwt.WithIssuer(cfg.Issuer),
 	)
 
 	manager, err := xjwt.NewEd25519ManagerBuilder[xgin.AuthUser](cfg.Private, cfg.Public).
@@ -70,22 +75,17 @@ func newRefreshTokenManager(cfg *jwtConfig) (xjwt.Manager[xgin.AuthUser], error)
 }
 
 // loadJwtConfig 加载配置
-func loadJwtConfig() (*jwtConfig, error) {
+func loadJwtConfig(key string) (*jwtConfig, error) {
 	cfg := &jwtConfig{}
-	if err := viper.UnmarshalKey("jwt", cfg); err != nil {
+	if err := viper.UnmarshalKey(key, cfg); err != nil {
 		return nil, err
 	}
 	return cfg, nil
 }
 
-type jwtTokenConfig struct {
+type jwtConfig struct {
 	Issuer     string        `mapstructure:"issuer"`
 	Expiration time.Duration `mapstructure:"expiration"`
-}
-
-type jwtConfig struct {
-	Private string         `mapstructure:"private"`
-	Public  string         `mapstructure:"public"`
-	Access  jwtTokenConfig `mapstructure:"access"`
-	Refresh jwtTokenConfig `mapstructure:"refresh"`
+	Private    string        `mapstructure:"private"`
+	Public     string        `mapstructure:"public"`
 }

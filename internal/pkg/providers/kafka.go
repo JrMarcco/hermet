@@ -24,19 +24,19 @@ type kafkaFxResult struct {
 	ReaderFactory consumer.KafkaReaderFactory
 }
 
-func newKafkaClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) kafkaFxResult {
+func newKafkaClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (kafkaFxResult, error) {
 	cfg := loadKafkaConfig()
 
 	// 配置 TLS。
 	tlsConfig, err := configureKafkaTLS(cfg.TLS, zapLogger)
 	if err != nil {
-		panic(err)
+		return kafkaFxResult{}, err
 	}
 
 	// 配置 SASL。
 	saslMechanism, err := configureKafkaSasl(cfg.SASL, zapLogger)
 	if err != nil {
-		panic(err)
+		return kafkaFxResult{}, err
 	}
 
 	// 创建 Transport。
@@ -121,7 +121,7 @@ func newKafkaClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) kafkaFxResult
 	return kafkaFxResult{
 		Writer:        writer,
 		ReaderFactory: readerFactory,
-	}
+	}, nil
 }
 
 type kafkaConfig struct {

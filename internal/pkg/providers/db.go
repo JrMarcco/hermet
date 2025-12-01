@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *gorm.DB {
+func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (*gorm.DB, error) {
 	type config struct {
 		DSN                       string        `mapstructure:"dsn"`
 		LogLevel                  string        `mapstructure:"log_level"`
@@ -24,7 +24,7 @@ func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *gorm.DB {
 
 	cfg := config{}
 	if err := viper.UnmarshalKey("db", &cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var level logger.LogLevel
@@ -52,12 +52,12 @@ func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *gorm.DB {
 		Logger: logger,
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	lifecycle.Append(fx.Hook{
@@ -71,5 +71,5 @@ func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *gorm.DB {
 		},
 	})
 
-	return db
+	return db, nil
 }

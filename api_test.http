@@ -1,0 +1,21 @@
+@uri = http://localhost:8080
+
+### Sign In
+# @name signIn
+POST {{uri}}/api/v1/user/sign-in
+Content-Type: application/json
+
+{
+    "account": "jrmarcco@gmail.com",
+    "accountType": "email",
+    "credential": "<passwd>"
+}
+
+
+### Refresh Access Token
+POST {{uri}}/api/v1/user/refresh-token
+Content-Type: application/json
+
+{
+    "refreshToken": "{{signIn.response.body.$.data.refreshToken}}"
+}

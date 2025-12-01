@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ZapLoggerFxModule  = fx.Module("zap-logger", fx.Provide(newLogger))
+	ZapLoggerFxModule  = fx.Module("zap-logger", fx.Provide(newZapLogger))
 	RedisFxModule      = fx.Module("redis", fx.Provide(newRedisCmdable))
 	DBFxModule         = fx.Module("db", fx.Provide(newDBClient))
 	MongoFxModule      = fx.Module("mongo", fx.Provide(newMongoClient))

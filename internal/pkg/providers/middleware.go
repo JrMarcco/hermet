@@ -16,21 +16,21 @@ import (
 	"go.uber.org/fx"
 )
 
-func newCorsBuilder() *middleware.CorsBuilder {
+func newCorsBuilder() (*middleware.CorsBuilder, error) {
 	type config struct {
-		MaxAge    int      `mapstructure:"max_age"`
-		Hostnames []string `mapstructure:"hostnames"`
+		MaxAge    time.Duration `mapstructure:"max_age"`
+		Hostnames []string      `mapstructure:"hostnames"`
 	}
 	cfg := config{}
-	if err := viper.UnmarshalKey("cors", &cfg); err != nil {
-		panic(err)
+	if err := viper.UnmarshalKey("hermet.cors", &cfg); err != nil {
+		return nil, err
 	}
 
 	builder := middleware.NewCorsBuilder().
 		AllowCredentials(true).
 		AllowMethods([]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions}).
 		AllowHeaders([]string{"Content-Length", "Content-Type", "Authorization", "Accept", "Origin", xgin.HeaderNameAccessToken}).
-		MaxAge(time.Duration(cfg.MaxAge) * time.Second).
+		MaxAge(cfg.MaxAge).
 		AllowOriginFunc(func(origin string) bool {
 			if origin == "" {
 				return false
@@ -42,7 +42,7 @@ func newCorsBuilder() *middleware.CorsBuilder {
 			reqHostname := u.Hostname()
 			return slices.Contains(cfg.Hostnames, reqHostname)
 		})
-	return builder
+	return builder, nil
 }
 
 type jwtBuilderFxParams struct {
@@ -52,18 +52,18 @@ type jwtBuilderFxParams struct {
 	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
 }
 
-func newJwtBuilder(params jwtBuilderFxParams) *middleware.JwtBuilder {
+func newJwtBuilder(params jwtBuilderFxParams) (*middleware.JwtBuilder, error) {
 	var ignores []string
-	if err := viper.UnmarshalKey("ignores", &ignores); err != nil {
-		panic(err)
+	if err := viper.UnmarshalKey("hermet.ignores", &ignores); err != nil {
+		return nil, err
 	}
 
 	ts, err := xset.NewTreeSet(strings.Compare)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	for _, ignore := range ignores {
 		ts.Add(ignore)
 	}
-	return middleware.NewJwtBuilder(params.Handler, params.AtManager, ts)
+	return middleware.NewJwtBuilder(params.Handler, params.AtManager, ts), nil
 }

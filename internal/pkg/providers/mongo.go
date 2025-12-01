@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *mongo.Client {
+func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (*mongo.Client, error) {
 	type config struct {
 		URI     string `mapstructure:"uri"`
 		AppName string `mapstructure:"app_name"`
@@ -32,7 +32,7 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *mongo.Client
 
 	cfg := config{}
 	if err := viper.UnmarshalKey("mongo", &cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	clientOptions := options.Client().
@@ -53,7 +53,7 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *mongo.Client
 
 	client, err := mongo.Connect(clientOptions)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	lifecycle.Append(fx.Hook{
@@ -91,5 +91,5 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *mongo.Client
 		},
 	})
 
-	return client
+	return client, nil
 }
