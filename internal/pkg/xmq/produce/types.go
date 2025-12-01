@@ -3,7 +3,7 @@ package produce
 import (
 	"context"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xmq"
+	"github.com/jrmarcco/hermet/internal/pkg/xmq"
 )
 
 type Producer interface {

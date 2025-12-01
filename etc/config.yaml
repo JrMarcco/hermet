@@ -111,7 +111,7 @@ kafka:
 
 jwt:
   access:
-    expiration: 30m   # Access Token 过期时间
+    expiration: 1h   # Access Token 过期时间
     issuer: "hermet-access"
     private: |
       -----BEGIN PRIVATE KEY-----
@@ -127,9 +127,9 @@ jwt:
     issuer: "hermet-refresh"
     private: |
       -----BEGIN PRIVATE KEY-----
-      MC4CAQAwBQYDK2VwBCIEINuchwbkYeYD/jnGLyPjRAufQGP+WUckh+PK6U4u7fk1
+      MC4CAQAwBQYDK2VwBCIEIKPTxPL86hZ9ogcHUcl8RFnEK5+31567wtfNNi2fwOMv
       -----END PRIVATE KEY-----
     public: |
       -----BEGIN PUBLIC KEY-----
-      MCowBQYDK2VwAyEA818wiIDR2aqxvLKcyQL2qvVCYlSs2A/izQi/K109rlU=
+      MCowBQYDK2VwAyEAuulBhGrO5+ic3KquuV0hfO1KrOIjYC3OVtjzle+MqQI=
       -----END PUBLIC KEY-----

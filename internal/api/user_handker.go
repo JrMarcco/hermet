@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	webjwt "github.com/JrMarcco/hermet/internal/api/jwt"
-	"github.com/JrMarcco/hermet/internal/errs"
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	"github.com/JrMarcco/hermet/internal/service"
 	"github.com/gin-gonic/gin"
+	webjwt "github.com/jrmarcco/hermet/internal/api/jwt"
+	"github.com/jrmarcco/hermet/internal/errs"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/service"
 	"go.uber.org/zap"
 )
 
@@ -111,7 +111,7 @@ func (h *UserHandler) SignOut(ctx *gin.Context) (xgin.R, error) {
 		}, nil
 	}
 
-	au, ok := val.(xgin.AuthUser)
+	au, ok := val.(xgin.ContextUser)
 	if !ok {
 		return xgin.R{
 			Code: http.StatusUnauthorized,

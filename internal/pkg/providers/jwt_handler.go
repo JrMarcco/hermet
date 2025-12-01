@@ -3,7 +3,7 @@ package providers
 import (
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/api/jwt"
+	"github.com/jrmarcco/hermet/internal/api/jwt"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )

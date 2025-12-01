@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/JrMarcco/jit/bean/option"
+	"github.com/jrmarcco/jit/bean/option"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

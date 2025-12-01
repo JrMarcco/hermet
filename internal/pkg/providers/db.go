@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xgorm"
+	"github.com/jrmarcco/hermet/internal/pkg/xgorm"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

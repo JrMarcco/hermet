@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 	"github.com/redis/go-redis/v9"
 )
 

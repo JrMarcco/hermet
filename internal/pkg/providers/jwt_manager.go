@@ -3,8 +3,8 @@ package providers
 import (
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	"github.com/JrMarcco/jit/xjwt"
+	"github.com/jrmarcco/jit/xjwt"
+	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 )
@@ -12,8 +12,8 @@ import (
 type jwtFxResult struct {
 	fx.Out
 
-	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
-	RtManager xjwt.Manager[xgin.AuthUser] `name:"refresh-token-manager"`
+	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
+	RtManager xjwt.Manager[authv1.JwtPayload] `name:"refresh-token-manager"`
 }
 
 func newJwtManager() (jwtFxResult, error) {
@@ -33,7 +33,7 @@ func newJwtManager() (jwtFxResult, error) {
 }
 
 // newAccessTokenManager 创建用于 Access Token 的 Manager
-func newAccessTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
+func newAccessTokenManager() (xjwt.Manager[authv1.JwtPayload], error) {
 	cfg, err := loadJwtConfig("jwt.access")
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func newAccessTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
 		xjwt.WithIssuer(cfg.Issuer),
 	)
 
-	manager, err := xjwt.NewEd25519ManagerBuilder[xgin.AuthUser](cfg.Private, cfg.Public).
+	manager, err := xjwt.NewEd25519ManagerBuilder[authv1.JwtPayload](cfg.Private, cfg.Public).
 		ClaimsConfig(claimsCfg).
 		Build()
 	if err != nil {
@@ -54,7 +54,7 @@ func newAccessTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
 }
 
 // newRefreshTokenManager 创建用于 Refresh Token 的 Manager
-func newRefreshTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
+func newRefreshTokenManager() (xjwt.Manager[authv1.JwtPayload], error) {
 	cfg, err := loadJwtConfig("jwt.refresh")
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func newRefreshTokenManager() (xjwt.Manager[xgin.AuthUser], error) {
 		xjwt.WithIssuer(cfg.Issuer),
 	)
 
-	manager, err := xjwt.NewEd25519ManagerBuilder[xgin.AuthUser](cfg.Private, cfg.Public).
+	manager, err := xjwt.NewEd25519ManagerBuilder[authv1.JwtPayload](cfg.Private, cfg.Public).
 		ClaimsConfig(claimsCfg).
 		Build()
 	if err != nil {

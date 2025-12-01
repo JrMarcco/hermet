@@ -3,8 +3,8 @@ package repo
 import (
 	"context"
 
-	"github.com/JrMarcco/hermet/internal/domain"
-	"github.com/JrMarcco/hermet/internal/repo/dao"
+	"github.com/jrmarcco/hermet/internal/domain"
+	"github.com/jrmarcco/hermet/internal/repo/dao"
 )
 
 //go:generate mockgen -source=biz_user_repo.go -destination=mock/biz_user_repo.mock.go -package=repomock -typed BizUserRepo

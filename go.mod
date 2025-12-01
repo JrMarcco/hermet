@@ -1,12 +1,13 @@
-module github.com/JrMarcco/hermet
+module github.com/jrmarcco/hermet
 
 go 1.25
 
 require (
-	github.com/JrMarcco/jit v0.0.3
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/google/uuid v1.6.0
+	github.com/jrmarcco/jit v0.0.4
+	github.com/jrmarcco/synp-api v0.0.4
 	github.com/redis/go-redis/v9 v9.17.1
 	github.com/segmentio/kafka-go v0.4.49
 	github.com/spf13/pflag v1.0.10
@@ -75,5 +76,5 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
-	google.golang.org/protobuf v1.36.9 // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 )

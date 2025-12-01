@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 	"go.uber.org/fx"
 )
 

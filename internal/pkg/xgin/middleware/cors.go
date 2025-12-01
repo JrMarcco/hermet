@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 )
 
 var _ xgin.HandlerFuncBuilder = (*CorsBuilder)(nil)

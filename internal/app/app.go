@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

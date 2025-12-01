@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"github.com/JrMarcco/hermet/internal/api/jwt"
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/api/jwt"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 	"go.uber.org/fx"
 )
 

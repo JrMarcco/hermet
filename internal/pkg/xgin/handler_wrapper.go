@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/JrMarcco/hermet/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmarcco/hermet/internal/errs"
 )
 
 // W 封装最基础的 gin.handlerFunc。
@@ -60,7 +60,7 @@ func P[Req any](bizFunc func(*gin.Context, Req) (R, error)) gin.HandlerFunc {
 }
 
 // WU 封装包含用户登录信息的 gin.handlerFunc。
-func WU(bizFunc func(*gin.Context, AuthUser) (R, error)) gin.HandlerFunc {
+func WU(bizFunc func(*gin.Context, ContextUser) (R, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		au, ok := extractAuthUser(ctx)
 		if !ok {
@@ -73,7 +73,7 @@ func WU(bizFunc func(*gin.Context, AuthUser) (R, error)) gin.HandlerFunc {
 }
 
 // BU 封装从请求体获取参数的且包含用户登录信息 gin.HandlerFunc。
-func BU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.HandlerFunc {
+func BU[Req any](bizFunc func(*gin.Context, Req, ContextUser) (R, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req Req
 		if err := ctx.BindJSON(&req); err != nil {
@@ -91,7 +91,7 @@ func BU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.Handl
 }
 
 // QU 封装从 url query 上获取参数且包含用户登录信息 gin.HandlerFunc。
-func QU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.HandlerFunc {
+func QU[Req any](bizFunc func(*gin.Context, Req, ContextUser) (R, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req Req
 		if err := ctx.BindQuery(&req); err != nil {
@@ -109,7 +109,7 @@ func QU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.Handl
 }
 
 // PU 封装从 url path 上获取参数且包含用户登录信息 gin.HandlerFunc。
-func PU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.HandlerFunc {
+func PU[Req any](bizFunc func(*gin.Context, Req, ContextUser) (R, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req Req
 		if err := ctx.BindUri(&req); err != nil {
@@ -126,20 +126,20 @@ func PU[Req any](bizFunc func(*gin.Context, Req, AuthUser) (R, error)) gin.Handl
 	}
 }
 
-func extractAuthUser(ctx *gin.Context) (AuthUser, bool) {
+func extractAuthUser(ctx *gin.Context) (ContextUser, bool) {
 	rawVal, ok := ctx.Get(ContextKeyAuthUser)
 	if !ok {
 		slog.Error("failed to get auth user")
 		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return AuthUser{}, false
+		return ContextUser{}, false
 	}
 
 	// 注意 gin.Context 内的值不能是 *AuthUser
-	au, ok := rawVal.(AuthUser)
+	au, ok := rawVal.(ContextUser)
 	if !ok {
 		slog.Error("failed to get auth user")
 		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return AuthUser{}, false
+		return ContextUser{}, false
 	}
 	return au, true
 }

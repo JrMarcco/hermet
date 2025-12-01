@@ -3,18 +3,19 @@ package middleware
 import (
 	"net/http"
 
-	webjwt "github.com/JrMarcco/hermet/internal/api/jwt"
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	"github.com/JrMarcco/jit/xjwt"
-	"github.com/JrMarcco/jit/xset"
 	"github.com/gin-gonic/gin"
+	webjwt "github.com/jrmarcco/hermet/internal/api/jwt"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/jit/xjwt"
+	"github.com/jrmarcco/jit/xset"
+	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
 )
 
 var _ xgin.HandlerFuncBuilder = (*JwtBuilder)(nil)
 
 type JwtBuilder struct {
 	handler   webjwt.Handler
-	atManager xjwt.Manager[xgin.AuthUser]
+	atManager xjwt.Manager[authv1.JwtPayload]
 	ignores   xset.Set[string]
 }
 
@@ -37,15 +38,17 @@ func (b *JwtBuilder) Build() gin.HandlerFunc {
 			return
 		}
 
-		au := decrypted.Data
-
-		ctx.Set(xgin.ContextKeyAuthUser, au)
+		ctx.Set(xgin.ContextKeyAuthUser, xgin.ContextUser{
+			BID: decrypted.Data.BizId,
+			UID: decrypted.Data.UserId,
+			SID: decrypted.Data.SessionId,
+		})
 		ctx.Next()
 	}
 }
 
 func NewJwtBuilder(
-	handler webjwt.Handler, atManager xjwt.Manager[xgin.AuthUser], ignores xset.Set[string],
+	handler webjwt.Handler, atManager xjwt.Manager[authv1.JwtPayload], ignores xset.Set[string],
 ) *JwtBuilder {
 	return &JwtBuilder{
 		handler:   handler,

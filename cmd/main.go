@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/JrMarcco/hermet/internal/api"
-	"github.com/JrMarcco/hermet/internal/app"
-	"github.com/JrMarcco/hermet/internal/pkg/providers"
-	"github.com/JrMarcco/hermet/internal/repo"
-	"github.com/JrMarcco/hermet/internal/repo/dao"
-	"github.com/JrMarcco/hermet/internal/service"
+	"github.com/jrmarcco/hermet/internal/api"
+	"github.com/jrmarcco/hermet/internal/app"
+	"github.com/jrmarcco/hermet/internal/pkg/providers"
+	"github.com/jrmarcco/hermet/internal/repo"
+	"github.com/jrmarcco/hermet/internal/repo/dao"
+	"github.com/jrmarcco/hermet/internal/service"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"

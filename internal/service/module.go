@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	"github.com/JrMarcco/hermet/internal/repo"
-	"github.com/JrMarcco/jit/xjwt"
+	"github.com/jrmarcco/hermet/internal/repo"
+	"github.com/jrmarcco/jit/xjwt"
+	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
 	"go.uber.org/fx"
 )
 
@@ -18,8 +18,8 @@ type userServiceFxParams struct {
 	fx.In
 
 	Repo      repo.BizUserRepo
-	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
-	RtManager xjwt.Manager[xgin.AuthUser] `name:"refresh-token-manager"`
+	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
+	RtManager xjwt.Manager[authv1.JwtPayload] `name:"refresh-token-manager"`
 }
 
 // newUserService 作为适配器，将 fx 的参数结构体转换为普通的函数调用。

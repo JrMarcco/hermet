@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JrMarcco/hermet/internal/api/jwt"
-	"github.com/JrMarcco/hermet/internal/pkg/xgin"
-	"github.com/JrMarcco/hermet/internal/pkg/xgin/middleware"
-	"github.com/JrMarcco/jit/xjwt"
-	"github.com/JrMarcco/jit/xset"
+	"github.com/jrmarcco/hermet/internal/api/jwt"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin/middleware"
+	"github.com/jrmarcco/jit/xjwt"
+	"github.com/jrmarcco/jit/xset"
+	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 )
@@ -49,7 +50,7 @@ type jwtBuilderFxParams struct {
 	fx.In
 
 	Handler   jwt.Handler
-	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
+	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
 }
 
 func newJwtBuilder(params jwtBuilderFxParams) (*middleware.JwtBuilder, error) {
