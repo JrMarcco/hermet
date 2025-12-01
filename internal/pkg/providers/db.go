@@ -1,4 +1,4 @@
-package ioc
+package providers
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/JrMarcco/hermet/internal/pkg/xgorm"
-	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -15,16 +14,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var DBFxOpt = fx.Module("db", fx.Provide(initDB))
-
-type DBFxParams struct {
-	fx.In
-
-	Logger    *zap.Logger
-	Lifecycle fx.Lifecycle
-}
-
-func initDB(params DBFxParams) *gorm.DB {
+func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *gorm.DB {
 	type config struct {
 		DSN                       string        `mapstructure:"dsn"`
 		LogLevel                  string        `mapstructure:"log_level"`
@@ -52,7 +42,7 @@ func initDB(params DBFxParams) *gorm.DB {
 	}
 
 	logger := xgorm.NewZapLogger(
-		params.Logger,
+		zapLogger,
 		xgorm.WithLogLevel(level),
 		xgorm.WithSlowThreshold(cfg.SlowThreshold),
 		xgorm.WithIgnoreRecordNotFoundError(cfg.IgnoreRecordNotFoundError),
@@ -70,13 +60,13 @@ func initDB(params DBFxParams) *gorm.DB {
 		panic(err)
 	}
 
-	params.Lifecycle.Append(fx.Hook{
+	lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
 			if err := sqlDB.Close(); err != nil {
-				params.Logger.Error("[hermet-ioc-db] failed to close db connection", zap.Error(err))
+				zapLogger.Error("[hermet-ioc-db] failed to close db connection", zap.Error(err))
 				return fmt.Errorf("failed to close db connection: %w", err)
 			}
-			params.Logger.Info("[hermet-ioc-db] db connection closed")
+			zapLogger.Info("[hermet-ioc-db] db connection closed")
 			return nil
 		},
 	})

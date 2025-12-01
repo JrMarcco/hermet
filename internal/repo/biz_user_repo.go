@@ -81,3 +81,7 @@ func (r *DefaultBizUserRepo) toDomain(user dao.BizUser) domain.BizUser {
 		UpdateAt: user.UpdateAt,
 	}
 }
+
+func NewDefaultBizUserRepo(dao dao.BizUserDao) *DefaultBizUserRepo {
+	return &DefaultBizUserRepo{dao: dao}
+}

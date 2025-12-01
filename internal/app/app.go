@@ -1,4 +1,4 @@
-package ioc
+package app
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var AppFxOpt = fx.Module(
+var AppFxModule = fx.Module(
 	"app",
 	fx.Provide(
 		gin.Default,
@@ -47,6 +47,7 @@ func (app *App) Stop(ctx context.Context) error {
 	return nil
 }
 
+// appFxParams 是 app 的依赖注入参数。
 type appFxParams struct {
 	fx.In
 

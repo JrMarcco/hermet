@@ -1,4 +1,4 @@
-package ioc
+package providers
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	webjwt "github.com/JrMarcco/hermet/internal/api/jwt"
+	"github.com/JrMarcco/hermet/internal/api/jwt"
 	"github.com/JrMarcco/hermet/internal/pkg/xgin"
 	"github.com/JrMarcco/hermet/internal/pkg/xgin/middleware"
 	"github.com/JrMarcco/jit/xjwt"
@@ -16,23 +16,7 @@ import (
 	"go.uber.org/fx"
 )
 
-var MiddlewareBuilderOpt = fx.Module(
-	"middleware",
-	fx.Provide(
-		fx.Annotate(
-			initCorsBuilder,
-			fx.As(new(xgin.HandlerFuncBuilder)),
-			fx.ResultTags(`group:"api_middleware"`),
-		),
-		fx.Annotate(
-			initJwtBuilder,
-			fx.As(new(xgin.HandlerFuncBuilder)),
-			fx.ResultTags(`group:"api_middleware"`),
-		),
-	),
-)
-
-func initCorsBuilder() *middleware.CorsBuilder {
+func newCorsBuilder() *middleware.CorsBuilder {
 	type config struct {
 		MaxAge    int      `mapstructure:"max_age"`
 		Hostnames []string `mapstructure:"hostnames"`
@@ -64,11 +48,11 @@ func initCorsBuilder() *middleware.CorsBuilder {
 type jwtBuilderFxParams struct {
 	fx.In
 
-	Handler   webjwt.Handler
+	Handler   jwt.Handler
 	AtManager xjwt.Manager[xgin.AuthUser] `name:"access-token-manager"`
 }
 
-func initJwtBuilder(params jwtBuilderFxParams) *middleware.JwtBuilder {
+func newJwtBuilder(params jwtBuilderFxParams) *middleware.JwtBuilder {
 	var ignores []string
 	if err := viper.UnmarshalKey("ignores", &ignores); err != nil {
 		panic(err)
@@ -83,7 +67,3 @@ func initJwtBuilder(params jwtBuilderFxParams) *middleware.JwtBuilder {
 	}
 	return middleware.NewJwtBuilder(params.Handler, params.AtManager, ts)
 }
-
-// func InitAccessLogBuilder() *middleware.AccessLogBuilder {
-// 	return &middleware.AccessLogBuilder{}
-// }

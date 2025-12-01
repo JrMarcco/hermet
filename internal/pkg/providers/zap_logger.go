@@ -1,4 +1,4 @@
-package ioc
+package providers
 
 import (
 	"context"
@@ -10,15 +10,7 @@ import (
 	"go.uber.org/zap/exp/zapslog"
 )
 
-var LoggerFxOpt = fx.Module("logger", fx.Provide(InitLogger))
-
-type loggerFxParams struct {
-	fx.In
-
-	Lifecycle fx.Lifecycle
-}
-
-func InitLogger(params loggerFxParams) *zap.Logger {
+func newLogger(lifecycle fx.Lifecycle) *zap.Logger {
 	type config struct {
 		Env string `mapstructure:"env"`
 	}
@@ -45,7 +37,7 @@ func InitLogger(params loggerFxParams) *zap.Logger {
 	// 初始化 slog
 	slog.SetDefault(slog.New(zapslog.NewHandler(logger.Core())))
 
-	params.Lifecycle.Append(fx.Hook{
+	lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
 			_ = logger.Sync()
 			return nil

@@ -1,4 +1,4 @@
-package ioc
+package providers
 
 import (
 	"context"
@@ -12,16 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var MongoFxOpt = fx.Module("mongo", fx.Provide(InitMongo))
-
-type mongoFxParams struct {
-	fx.In
-
-	Logger    *zap.Logger
-	Lifecycle fx.Lifecycle
-}
-
-func InitMongo(params mongoFxParams) *mongo.Client {
+func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) *mongo.Client {
 	type config struct {
 		URI     string `mapstructure:"uri"`
 		AppName string `mapstructure:"app_name"`
@@ -65,7 +56,7 @@ func InitMongo(params mongoFxParams) *mongo.Client {
 		panic(err)
 	}
 
-	params.Lifecycle.Append(fx.Hook{
+	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			startupCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.StartupTimeout)*time.Millisecond)
 			defer cancel()
@@ -82,7 +73,7 @@ func InitMongo(params mongoFxParams) *mongo.Client {
 				return err
 			}
 
-			params.Logger.Info("[hermet-ioc] successfully connected to mongo", zap.String("uri", cfg.URI))
+			zapLogger.Info("[hermet-ioc] successfully connected to mongo", zap.String("uri", cfg.URI))
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
@@ -91,11 +82,11 @@ func InitMongo(params mongoFxParams) *mongo.Client {
 
 			err := client.Disconnect(stopCtx)
 			if err != nil {
-				params.Logger.Error("[hermet-ioc] failed to disconnect from mongo", zap.Error(err))
+				zapLogger.Error("[hermet-ioc] failed to disconnect from mongo", zap.Error(err))
 				return err
 			}
 
-			params.Logger.Info("[hermet-ioc] successfully disconnected from mongo")
+			zapLogger.Info("[hermet-ioc] successfully disconnected from mongo")
 			return nil
 		},
 	})

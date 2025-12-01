@@ -1,7 +1,12 @@
 package main
 
 import (
-	"github.com/JrMarcco/hermet/internal/ioc"
+	"github.com/JrMarcco/hermet/internal/api"
+	"github.com/JrMarcco/hermet/internal/app"
+	"github.com/JrMarcco/hermet/internal/pkg/providers"
+	"github.com/JrMarcco/hermet/internal/repo"
+	"github.com/JrMarcco/hermet/internal/repo/dao"
+	"github.com/JrMarcco/hermet/internal/service"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -18,31 +23,43 @@ func main() {
 		}),
 
 		// 初始化 zap.logger。
-		ioc.LoggerFxOpt,
-
-		// 初始化 db。
-		ioc.DBFxOpt,
-
-		// 初始化 mongo db client。
-		ioc.MongoFxOpt,
+		providers.ZapLoggerFxModule,
 
 		// 初始化 redis client。
-		ioc.RedisFxOpt,
+		providers.RedisFxModule,
+
+		// 初始化 db。
+		providers.DBFxModule,
+
+		// 初始化 mongo db client。
+		providers.MongoFxModule,
 
 		// 初始化 kafka client。
-		ioc.KafkaFxOpt,
+		providers.KafkaFxModule,
 
 		// 初始化 jwt manager。
-		ioc.JwtManagerOpt,
+		providers.JwtManagerFxModule,
+
+		// 初始化 jwt handler。
+		providers.JwtHandlerFxModule,
 
 		// 初始化 middleware。
-		ioc.MiddlewareBuilderOpt,
+		providers.MiddlewareFxModule,
+
+		// 初始化 dao。
+		dao.DaoFxModule,
+
+		// 初始化 repo。
+		repo.RepoFxModule,
+
+		// 初始化 service。
+		service.ServiceFxModule,
 
 		// 初始化 web。
-		ioc.APIFxOpt,
+		api.APIFxModule,
 
 		// 初始化 app。
-		ioc.AppFxOpt,
+		app.AppFxModule,
 	).Run()
 }
 

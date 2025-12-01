@@ -72,3 +72,15 @@ func (s *DefaultUserService) VerifyRefreshToken(_ context.Context, refreshToken 
 	}
 	return decrypted.Data, nil
 }
+
+func NewDefaultUserService(
+	repo repo.BizUserRepo,
+	atManager xjwt.Manager[xgin.AuthUser],
+	rtManager xjwt.Manager[xgin.AuthUser],
+) *DefaultUserService {
+	return &DefaultUserService{
+		repo:      repo,
+		atManager: atManager,
+		rtManager: rtManager,
+	}
+}

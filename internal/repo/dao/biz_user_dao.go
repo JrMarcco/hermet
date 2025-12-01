@@ -84,3 +84,7 @@ func (d *DefaultBizUserDao) FindByMobile(ctx context.Context, mobile string) (Bi
 		First(&user).Error
 	return user, err
 }
+
+func NewDefaultBizUserDao(db *gorm.DB) *DefaultBizUserDao {
+	return &DefaultBizUserDao{db: db}
+}

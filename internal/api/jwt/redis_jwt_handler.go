@@ -57,9 +57,16 @@ func (h *RedisJwtHandler) key(sid string) string {
 	return fmt.Sprintf("user:sid:%s", sid)
 }
 
-func NewRedisJwtHandler(rdb redis.Cmdable, expiration time.Duration) *RedisJwtHandler {
+func NewRedisJwtHandler(rdb redis.Cmdable, expiration time.Duration) (*RedisJwtHandler, error) {
+	if rdb == nil {
+		return nil, errors.New("redis client is nil")
+	}
+	if expiration <= 0 {
+		return nil, errors.New("expiration must be greater than 0")
+	}
+
 	return &RedisJwtHandler{
 		rdb:        rdb,
 		expiration: expiration,
-	}
+	}, nil
 }
