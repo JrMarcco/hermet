@@ -2,7 +2,6 @@ profile:
   env: dev
 
 hermet:
-
   web:
     addr: ":8080"
     read_header_timeout: 5s # 读取请求头超时，防止 Slowloris 攻击
@@ -17,12 +16,18 @@ hermet:
     max_age: 86400s
     hostnames:
       - "localhost"
-      - "172.31.187.9" # wsl ip
+      - "172.19.208.1" # wsl ip
 
   ignores:
     - "/api/v1/user/sign-in"
     - "/api/v1/user/refresh-token"
 
+# Redis 配置
+redis:
+  addr: 192.168.3.3:6379
+  password: "<passwd>"
+
+# 数据库配置
 db:
   log_level: "info"
   slow_threshold: 200ms # 慢查询阈值
@@ -30,10 +35,26 @@ db:
   # sslmode=disable 用于开发环境，线上一般推荐使用 sslmode=require / sslmode=verify-ca(更高安全性) / sslmode=verify-full (最高安全性)
   dsn: "postgres://jrmarcco:%3Cpasswd%3E@192.168.3.3:5432/hermet?sslmode=disable&connect_timeout=1&statement_timeout=3000&idle_in_transaction_session_timeout=3000"
 
-# Redis 配置
-redis:
-  addr: 192.168.3.3:6379
+# MongoDB 配置
+mongo:
+  uri: "mongodb://192.168.3.3:27017"
+  db_name: "hermet"
+  app_name: "hermet"
+  # 认证信息
+  username: "jrmarcco"
   password: "<passwd>"
+  auth_source: "admin"
+  # 连接池配置
+  max_pool_size: 100
+  max_conn_idle_time: 10s
+  connect_timeout: 1s
+  server_selection_timeout: 1s
+  startup_timeout: 1s
+  shutdown_timeout: 1s
+  # 分片配置
+  sharding:
+    - collection_name: "message"
+      key: "cid"
 
 # Kafka 配置
 # 使用 SASL/SCRAM-SHA-256 + TLS 认证
