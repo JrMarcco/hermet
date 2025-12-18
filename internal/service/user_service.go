@@ -23,7 +23,8 @@ const accountTypeEmail = "email"
 var _ UserService = (*DefaultUserService)(nil)
 
 type DefaultUserService struct {
-	repo repo.BizUserRepo
+	repo        repo.BizUserRepo
+	messageRepo repo.MessageRepo
 
 	atManager xjwt.Manager[authv1.JwtPayload]
 	rtManager xjwt.Manager[authv1.JwtPayload]
@@ -88,11 +89,15 @@ func (s *DefaultUserService) VerifyRefreshToken(_ context.Context, refreshToken 
 
 func NewDefaultUserService(
 	repo repo.BizUserRepo,
+	messageRepo repo.MessageRepo,
+
 	atManager xjwt.Manager[authv1.JwtPayload],
 	rtManager xjwt.Manager[authv1.JwtPayload],
 ) *DefaultUserService {
 	return &DefaultUserService{
-		repo:      repo,
+		repo:        repo,
+		messageRepo: messageRepo,
+
 		atManager: atManager,
 		rtManager: rtManager,
 	}

@@ -1,151 +1,218 @@
+# MongoDB 分片集群配置
+# 3 配置中心 + 3 分片集(每个1主2从) + TLS + 认证
+x-mongo-common: &mongo-common
+  image: mongo:latest
+  restart: unless-stopped
+  networks:
+    - mongo-network
+
 services:
-  # ---------- Config Server (3节点副本集) ----------
-  mongo-cfg1:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-cfg1
-      - MONGODB_SHARDING_MODE=configsvr
-      - MONGODB_REPLICA_SET_NAME=cfgrs
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  # ==================== 配置服务器副本集 ====================
+  mongodb-config-server-1:
+    <<: *mongo-common
+    container_name: mongodb-config-server-1
+    hostname: mongodb-config-server-1
+    command: >
+      mongod
+      --configsvr
+      --replSet configReplSet
+      --port 27019
+      --bind_ip_all
     volumes:
-      - ./mongo-cfg1/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - config-server-1-data:/data/db
+      - config-server-1-config-data:/data/configdb
 
-  mongo-cfg2:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-cfg2
-      - MONGODB_SHARDING_MODE=configsvr
-      - MONGODB_REPLICA_SET_NAME=cfgrs
-      - MONGODB_INITIAL_PRIMARY_HOST=mongo-cfg1
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  mongodb-config-server-2:
+    <<: *mongo-common
+    container_name: mongodb-config-server-2
+    hostname: mongodb-config-server-2
+    command: >
+      mongod
+      --configsvr
+      --replSet configReplSet
+      --port 27019
+      --bind_ip_all
     volumes:
-      - ./mongo-cfg2/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
-  mongo-cfg3:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-cfg3
-      - MONGODB_SHARDING_MODE=configsvr
-      - MONGODB_REPLICA_SET_NAME=cfgrs
-      - MONGODB_INITIAL_PRIMARY_HOST=mongo-cfg1
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
-    volumes:
-      - ./mongo-cfg3/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - config-server-2-data:/data/db
+      - config-server-2-config-data:/data/configdb
 
-  # ---------- Shard1 (2节点副本集) ----------
-  mongo-shard1a:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-shard1a
-      - MONGODB_SHARDING_MODE=shard
-      - MONGODB_REPLICA_SET_NAME=shard1rs
-      - MONGODB_CONFIG_SVR_REPLICA_SET_NAME=cfgrs
-      - MONGODB_CONFIG_SVR_HOSTS=mongo-cfg1,mongo-cfg2,mongo-cfg3
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  mongodb-config-server-3:
+    <<: *mongo-common
+    container_name: mongodb-config-server-3
+    hostname: mongodb-config-server-3
+    command: >
+      mongod
+      --configsvr
+      --replSet configReplSet
+      --port 27019
+      --bind_ip_all
     volumes:
-      - ./mongo-shard1a/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - config-server-3-data:/data/db
+      - config-server-3-config-data:/data/configdb
 
-  mongo-shard1b:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-shard1b
-      - MONGODB_SHARDING_MODE=shard
-      - MONGODB_REPLICA_SET_NAME=shard1rs
-      - MONGODB_INITIAL_PRIMARY_HOST=mongo-shard1a
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_CONFIG_SVR_REPLICA_SET_NAME=cfgrs
-      - MONGODB_CONFIG_SVR_HOSTS=mongo-cfg1,mongo-cfg2,mongo-cfg3
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  # ==================== 分片1 副本集 (1主2从) ====================
+  mongodb-shard1-primary:
+    <<: *mongo-common
+    container_name: mongodb-shard1-primary
+    hostname: mongodb-shard1-primary
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard1ReplSet
+      --port 27018
+      --bind_ip_all
     volumes:
-      - ./mongo-shard1b/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - shard1-primary-data:/data/db
 
-  # ---------- Shard2 (2节点副本集) ----------
-  mongo-shard2a:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-shard2a
-      - MONGODB_SHARDING_MODE=shard
-      - MONGODB_REPLICA_SET_NAME=shard2rs
-      - MONGODB_CONFIG_SVR_REPLICA_SET_NAME=cfgrs
-      - MONGODB_CONFIG_SVR_HOSTS=mongo-cfg1,mongo-cfg2,mongo-cfg3
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  mongodb-shard1-secondary1:
+    <<: *mongo-common
+    container_name: mongodb-shard1-secondary1
+    hostname: mongodb-shard1-secondary1
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard1ReplSet
+      --port 27018
+      --bind_ip_all
     volumes:
-      - ./mongo-shard2a/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - shard1-secondary1-data:/data/db
 
-  mongo-shard2b:
-    image: bitnami/mongodb:latest
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongo-shard2b
-      - MONGODB_SHARDING_MODE=shard
-      - MONGODB_REPLICA_SET_NAME=shard2rs
-      - MONGODB_INITIAL_PRIMARY_HOST=mongo-shard2a
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_CONFIG_SVR_REPLICA_SET_NAME=cfgrs
-      - MONGODB_CONFIG_SVR_HOSTS=mongo-cfg1,mongo-cfg2,mongo-cfg3
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+  mongodb-shard1-secondary2:
+    <<: *mongo-common
+    container_name: mongodb-shard1-secondary2
+    hostname: mongodb-shard1-secondary2
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard1ReplSet
+      --port 27018
+      --bind_ip_all
     volumes:
-      - ./mongo-shard2b/data:/bitnami/mongodb
-    networks:
-      - mongodb-network
+      - shard1-secondary2-data:/data/db
 
-  # ---------- Mongos Router ----------
-  mongos:
-    image: bitnami/mongodb:latest
-    hostname: mongos
+  # ==================== 分片2 副本集 (1主2从) ====================
+  mongodb-shard2-primary:
+    <<: *mongo-common
+    container_name: mongodb-shard2-primary
+    hostname: mongodb-shard2-primary
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard2ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard2-primary-data:/data/db
+
+  mongodb-shard2-secondary1:
+    <<: *mongo-common
+    container_name: mongodb-shard2-secondary1
+    hostname: mongodb-shard2-secondary1
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard2ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard2-secondary1-data:/data/db
+
+  mongodb-shard2-secondary2:
+    <<: *mongo-common
+    container_name: mongodb-shard2-secondary2
+    hostname: mongodb-shard2-secondary2
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard2ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard2-secondary2-data:/data/db
+
+  # ==================== 分片3 副本集 (1主2从) ====================
+  mongodb-shard3-primary:
+    <<: *mongo-common
+    container_name: mongodb-shard3-primary
+    hostname: mongodb-shard3-primary
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard3ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard3-primary-data:/data/db
+
+  mongodb-shard3-secondary1:
+    <<: *mongo-common
+    container_name: mongodb-shard3-secondary1
+    hostname: mongodb-shard3-secondary1
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard3ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard3-secondary1-data:/data/db
+
+  mongodb-shard3-secondary2:
+    <<: *mongo-common
+    container_name: mongodb-shard3-secondary2
+    hostname: mongodb-shard3-secondary2
+    command: >
+      mongod
+      --shardsvr
+      --replSet shard3ReplSet
+      --port 27018
+      --bind_ip_all
+    volumes:
+      - shard3-secondary2-data:/data/db
+
+  # ==================== Mongos 路由器 ====================
+  mongodb-mongos:
+    <<: *mongo-common
+    container_name: mongodb-mongos
+    hostname: mongodb-mongos
+    command: >
+      mongos
+      --configdb configReplSet/mongodb-config-server-1:27019,mongodb-config-server-2:27019,mongodb-config-server-3:27019
+      --port 27017
+      --bind_ip_all
     ports:
       - "27017:27017"
     depends_on:
-      - mongo-cfg1
-      - mongo-cfg2
-      - mongo-cfg3
-      - mongo-shard1a
-      - mongo-shard1b
-      - mongo-shard2a
-      - mongo-shard2b
-    environment:
-      - MONGODB_SHARDING_MODE=mongos
-      - MONGODB_CONFIG_SVR_REPLICA_SET_NAME=cfgrs
-      - MONGODB_CONFIG_SVR_HOSTS=mongo-cfg1,mongo-cfg2,mongo-cfg3
-      - MONGODB_SHARD_CHUNKS=2 # Added for initial shard setup, optional
-      - MONGODB_ROOT_USER=${ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MONGODB_REPLICA_SET_KEY=${REPLICA_SET_KEY}
-      - ALLOW_EMPTY_PASSWORD=no
+      - mongodb-config-server-1
+      - mongodb-config-server-2
+      - mongodb-config-server-3
+      - mongodb-shard1-primary
+      - mongodb-shard1-secondary1
+      - mongodb-shard1-secondary2
+      - mongodb-shard2-primary
+      - mongodb-shard2-secondary1
+      - mongodb-shard2-secondary2
+      - mongodb-shard3-primary
+      - mongodb-shard3-secondary1
+      - mongodb-shard3-secondary2
 
 networks:
-  mongodb-network:
+  mongo-network:
     driver: bridge
+
+volumes:
+  config-server-1-data:
+  config-server-1-config-data:
+  config-server-2-data:
+  config-server-2-config-data:
+  config-server-3-data:
+  config-server-3-config-data:
+  shard1-primary-data:
+  shard1-secondary1-data:
+  shard1-secondary2-data:
+  shard2-primary-data:
+  shard2-secondary1-data:
+  shard2-secondary2-data:
+  shard3-primary-data:
+  shard3-secondary1-data:
+  shard3-secondary2-data:

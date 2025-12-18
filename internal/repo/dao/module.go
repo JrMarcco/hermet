@@ -9,5 +9,9 @@ var DaoFxModule = fx.Module(
 			NewDefaultBizUserDao,
 			fx.As(new(BizUserDao)),
 		),
+		fx.Annotate(
+			NewMongoMessageDao,
+			fx.As(new(MessageDao)),
+		),
 	),
 )

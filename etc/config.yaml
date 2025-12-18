@@ -41,8 +41,8 @@ mongo:
   db_name: "hermet"
   app_name: "hermet"
   # 认证信息
-  username: "jrmarcco"
-  password: "<passwd>"
+  username: "root"
+  password: "root123"
   auth_source: "admin"
   # 连接池配置
   max_pool_size: 100

@@ -12,5 +12,11 @@ var RepoFxModule = fx.Module(
 			NewDefaultBizUserRepo,
 			fx.As(new(BizUserRepo)),
 		),
+
+		// message repo
+		fx.Annotate(
+			NewDefaultMessageRepo,
+			fx.As(new(MessageRepo)),
+		),
 	),
 )

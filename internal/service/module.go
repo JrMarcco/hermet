@@ -17,7 +17,9 @@ var ServiceFxModule = fx.Module(
 type userServiceFxParams struct {
 	fx.In
 
-	Repo      repo.BizUserRepo
+	Repo        repo.BizUserRepo
+	MessageRepo repo.MessageRepo
+
 	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
 	RtManager xjwt.Manager[authv1.JwtPayload] `name:"refresh-token-manager"`
 }
@@ -26,6 +28,7 @@ type userServiceFxParams struct {
 func newUserService(p userServiceFxParams) UserService {
 	return NewDefaultUserService(
 		p.Repo,
+		p.MessageRepo,
 		p.AtManager,
 		p.RtManager,
 	)
