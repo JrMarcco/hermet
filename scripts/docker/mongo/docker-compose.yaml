@@ -1,218 +1,333 @@
 # MongoDB 分片集群配置
-# 3 配置中心 + 3 分片集(每个1主2从) + TLS + 认证
+# 3 配置中心 + 3 分片集 ( 每个 1 主 2 从 ) + TLS + 认证
 x-mongo-common: &mongo-common
   image: mongo:latest
   restart: unless-stopped
+  user: "1000:1000"
   networks:
-    - mongo-network
+    - jrmarcco_net
+
+networks:
+  jrmarcco_net:
+    external: true
 
 services:
   # ==================== 配置服务器副本集 ====================
   mongodb-config-server-1:
     <<: *mongo-common
-    container_name: mongodb-config-server-1
     hostname: mongodb-config-server-1
+    container_name: mongodb-config-server-1
     command: >
       mongod
       --configsvr
       --replSet configReplSet
       --port 27019
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - config-server-1-data:/data/db
-      - config-server-1-config-data:/data/configdb
+      - ./config-svr-1-data:/data/db
+      - ./config-svr-1-config-data:/data/configdb
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
   mongodb-config-server-2:
     <<: *mongo-common
-    container_name: mongodb-config-server-2
     hostname: mongodb-config-server-2
+    container_name: mongodb-config-server-2
     command: >
       mongod
       --configsvr
       --replSet configReplSet
       --port 27019
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - config-server-2-data:/data/db
-      - config-server-2-config-data:/data/configdb
+      - ./config-svr-2-data:/data/db
+      - ./config-svr-2-config-data:/data/configdb
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
   mongodb-config-server-3:
     <<: *mongo-common
-    container_name: mongodb-config-server-3
     hostname: mongodb-config-server-3
+    container_name: mongodb-config-server-3
     command: >
       mongod
       --configsvr
       --replSet configReplSet
       --port 27019
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - config-server-3-data:/data/db
-      - config-server-3-config-data:/data/configdb
+      - ./config-svr-3-data:/data/db
+      - ./config-svr-3-config-data:/data/configdb
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  # ==================== 分片1 副本集 (1主2从) ====================
-  mongodb-shard1-primary:
+  # ==================== 分片1 副本集 ( 1 主 2 从 ) ====================
+  mongodb-shard1-a:
     <<: *mongo-common
-    container_name: mongodb-shard1-primary
-    hostname: mongodb-shard1-primary
+    hostname: mongodb-shard1-a
+    container_name: mongodb-shard1-a
     command: >
       mongod
       --shardsvr
       --replSet shard1ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard1-primary-data:/data/db
+      - ./shard1-a-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard1-secondary1:
+  mongodb-shard1-b:
     <<: *mongo-common
-    container_name: mongodb-shard1-secondary1
-    hostname: mongodb-shard1-secondary1
+    hostname: mongodb-shard1-b
+    container_name: mongodb-shard1-b
     command: >
       mongod
       --shardsvr
       --replSet shard1ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard1-secondary1-data:/data/db
+      - ./shard1-b-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard1-secondary2:
+  mongodb-shard1-c:
     <<: *mongo-common
-    container_name: mongodb-shard1-secondary2
-    hostname: mongodb-shard1-secondary2
+    hostname: mongodb-shard1-c
+    container_name: mongodb-shard1-c
     command: >
       mongod
       --shardsvr
       --replSet shard1ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard1-secondary2-data:/data/db
+      - ./shard1-c-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  # ==================== 分片2 副本集 (1主2从) ====================
-  mongodb-shard2-primary:
+  # ==================== 分片2 副本集 ( 1 主 2 从 ) ====================
+  mongodb-shard2-a:
     <<: *mongo-common
-    container_name: mongodb-shard2-primary
-    hostname: mongodb-shard2-primary
+    hostname: mongodb-shard2-a
+    container_name: mongodb-shard2-a
     command: >
       mongod
       --shardsvr
       --replSet shard2ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard2-primary-data:/data/db
+      - ./shard2-a-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard2-secondary1:
+  mongodb-shard2-b:
     <<: *mongo-common
-    container_name: mongodb-shard2-secondary1
-    hostname: mongodb-shard2-secondary1
+    hostname: mongodb-shard2-b
+    container_name: mongodb-shard2-b
     command: >
       mongod
       --shardsvr
       --replSet shard2ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard2-secondary1-data:/data/db
+      - ./shard2-b-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard2-secondary2:
+  mongodb-shard2-c:
     <<: *mongo-common
-    container_name: mongodb-shard2-secondary2
-    hostname: mongodb-shard2-secondary2
+    hostname: mongodb-shard2-c
+    container_name: mongodb-shard2-c
     command: >
       mongod
       --shardsvr
       --replSet shard2ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard2-secondary2-data:/data/db
+      - ./shard2-c-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  # ==================== 分片3 副本集 (1主2从) ====================
-  mongodb-shard3-primary:
+  # ==================== 分片3 副本集 ( 1 主 2 从 ) ====================
+  mongodb-shard3-a:
     <<: *mongo-common
-    container_name: mongodb-shard3-primary
-    hostname: mongodb-shard3-primary
+    hostname: mongodb-shard3-a
+    container_name: mongodb-shard3-a
     command: >
       mongod
       --shardsvr
       --replSet shard3ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard3-primary-data:/data/db
+      - ./shard3-a-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard3-secondary1:
+  mongodb-shard3-b:
     <<: *mongo-common
-    container_name: mongodb-shard3-secondary1
-    hostname: mongodb-shard3-secondary1
+    hostname: mongodb-shard3-b
+    container_name: mongodb-shard3-b
     command: >
       mongod
       --shardsvr
       --replSet shard3ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard3-secondary1-data:/data/db
+      - ./shard3-b-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
-  mongodb-shard3-secondary2:
+  mongodb-shard3-c:
     <<: *mongo-common
-    container_name: mongodb-shard3-secondary2
-    hostname: mongodb-shard3-secondary2
+    hostname: mongodb-shard3-c
+    container_name: mongodb-shard3-c
     command: >
       mongod
       --shardsvr
       --replSet shard3ReplSet
       --port 27018
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     volumes:
-      - shard3-secondary2-data:/data/db
+      - ./shard3-c-data:/data/db
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
   # ==================== Mongos 路由器 ====================
   mongodb-mongos:
     <<: *mongo-common
-    container_name: mongodb-mongos
     hostname: mongodb-mongos
+    container_name: mongodb-mongos
     command: >
       mongos
       --configdb configReplSet/mongodb-config-server-1:27019,mongodb-config-server-2:27019,mongodb-config-server-3:27019
       --port 27017
       --bind_ip_all
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem
+      --tlsCAFile /etc/ssl/mongodb/ca.pem
+      --clusterAuthMode keyFile
+      --keyFile /etc/ssl/mongodb/keyfile
+      --tlsClusterFile /etc/ssl/mongodb/mongo.pem
     ports:
       - "27017:27017"
+    volumes:
+      - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
+      - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
+      - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro
+      - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
     depends_on:
       - mongodb-config-server-1
       - mongodb-config-server-2
       - mongodb-config-server-3
-      - mongodb-shard1-primary
-      - mongodb-shard1-secondary1
-      - mongodb-shard1-secondary2
-      - mongodb-shard2-primary
-      - mongodb-shard2-secondary1
-      - mongodb-shard2-secondary2
-      - mongodb-shard3-primary
-      - mongodb-shard3-secondary1
-      - mongodb-shard3-secondary2
-
-networks:
-  mongo-network:
-    driver: bridge
-
-volumes:
-  config-server-1-data:
-  config-server-1-config-data:
-  config-server-2-data:
-  config-server-2-config-data:
-  config-server-3-data:
-  config-server-3-config-data:
-  shard1-primary-data:
-  shard1-secondary1-data:
-  shard1-secondary2-data:
-  shard2-primary-data:
-  shard2-secondary1-data:
-  shard2-secondary2-data:
-  shard3-primary-data:
-  shard3-secondary1-data:
-  shard3-secondary2-data:
+      - mongodb-shard1-a
+      - mongodb-shard1-b
+      - mongodb-shard1-c
+      - mongodb-shard2-a
+      - mongodb-shard2-b
+      - mongodb-shard2-c
+      - mongodb-shard3-a
+      - mongodb-shard3-b
+      - mongodb-shard3-c
