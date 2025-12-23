@@ -6,8 +6,8 @@ if [ -z "$1" ]; then
     echo "用法: $0 <客户端名称> [有效期天数]"
     echo ""
     echo "示例:"
-    echo "  $0 myapp-client          # 生成 myapp-client 证书（默认10年）"
-    echo "  $0 monitoring-client 365 # 生成 monitoring-client 证书（1年有效期）"
+    echo "  $0 myapp-client          # 生成 myapp-client 证书 ( 默认10年 )"
+    echo "  $0 monitoring-client 365 # 生成 monitoring-client 证书 ( 1年有效期 )"
     echo ""
     echo "已存在的客户端证书:"
     ls certs/*-client.pem 2>/dev/null | while read cert; do

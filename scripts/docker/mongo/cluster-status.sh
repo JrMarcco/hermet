@@ -12,6 +12,6 @@ docker exec mongodb-mongos-1 mongosh --port 27017 admin \
   --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem \
   --tlsCAFile /etc/ssl/mongodb/ca.pem \
   --authenticationDatabase admin -u "$USER" -p "$PASSWORD" \
-  --quiet --eval '
+  --quiet --eval "
 sh.status()
-'
+"

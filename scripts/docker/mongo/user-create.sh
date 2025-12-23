@@ -14,4 +14,4 @@ db.createUser({
   pwd: '<passwd>',
   roles: [ { role: 'root', db: 'admin' } ]
 })
-" 2>&1 | grep -v "Warning"
+"

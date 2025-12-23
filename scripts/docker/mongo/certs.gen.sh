@@ -54,7 +54,7 @@ DNS.11 = mongodb-shard3-a
 DNS.12 = mongodb-shard3-b
 DNS.13 = mongodb-shard3-c
 
-DNS.14 = mongodb-mongos
+DNS.14 = mongodb-mongos-1
 
 # ===== 如果需要外部访问，添加主机名 或 IP =====
 # DNS.xx = mongos.yourdomain.com
