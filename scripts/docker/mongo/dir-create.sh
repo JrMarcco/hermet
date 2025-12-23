@@ -4,6 +4,7 @@
 CONFIG_SERVERS=3
 SHARDS=3
 NODES_PER_SHARD=3
+MONGOS=1
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
             NODES_PER_SHARD="$2"
             shift 2
             ;;
+        --mongos)
+            MONGOS="$2"
+            shift 2
+            ;;
         -h|--help)
             echo "用法: $0 [选项]"
             echo ""
@@ -27,6 +32,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --config-servers NUM     配置服务器数量 ( 默认 3 )"
             echo "  --shards NUM             分片数量 ( 默认 3 )"
             echo "  --nodes-per-shard NUM    每个分片的节点数 ( 默认 3 )"
+            echo "  --mongos NUM             路由器数量 ( 默认 1 )"
             echo "  -h, --help               显示此帮助信息"
             echo ""
             echo "示例:"
@@ -53,6 +59,7 @@ echo "创建 MongoDB 数据目录..."
 echo "配置服务器数量: $CONFIG_SERVERS"
 echo "分片数量: $SHARDS"
 echo "每个分片的节点数: $NODES_PER_SHARD"
+echo "路由器数量: $MONGOS"
 echo ""
 
 # 创建配置服务器目录
@@ -70,6 +77,12 @@ for shard in $(seq 1 $SHARDS); do
         node_label=${NODE_LABELS[$node]}
         mkdir -p "shard${shard}-${node_label}-data"
     done
+done
+
+# 创建路由器目录
+echo "创建路由器目录..."
+for i in $(seq 1 $MONGOS); do
+    mkdir -p "mongos-${i}-data"
 done
 
 echo ""

@@ -296,10 +296,10 @@ services:
       - ./certs/admin-client.pem:/etc/ssl/mongodb/admin-client.pem:ro
 
   # ==================== Mongos 路由器 ====================
-  mongodb-mongos:
+  mongodb-mongos-1:
     <<: *mongo-common
-    hostname: mongodb-mongos
-    container_name: mongodb-mongos
+    hostname: mongodb-mongos-1
+    container_name: mongodb-mongos-1
     command: >
       mongos
       --configdb configReplSet/mongodb-config-server-1:27019,mongodb-config-server-2:27019,mongodb-config-server-3:27019
@@ -314,6 +314,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
+      - ./mongos-1-data:/data/db
       - ./certs/ca.pem:/etc/ssl/mongodb/ca.pem:ro
       - ./certs/mongo.pem:/etc/ssl/mongodb/mongo.pem:ro
       - ./certs/keyfile:/etc/ssl/mongodb/keyfile:ro

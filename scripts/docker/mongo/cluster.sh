@@ -1,17 +1,17 @@
 #!/bin/bash
 echo "=========================================="
-echo "MongoDB 管理员用户创建脚本"
+echo "MongoDB 集群状态脚本"
 echo "=========================================="
 echo ""
+
+USER="jrmarcco"
+PASSWORD="<passwd>"
 
 docker exec mongodb-mongos-1 mongosh --port 27017 admin \
   --tls \
   --tlsCertificateKeyFile /etc/ssl/mongodb/mongo.pem \
   --tlsCAFile /etc/ssl/mongodb/ca.pem \
-  --quiet --eval "
-db.createUser({
-  user: 'jrmarcco',
-  pwd: '<passwd>',
-  roles: [ { role: 'root', db: 'admin' } ]
-})
-" 2>&1 | grep -v "Warning"
+  --authenticationDatabase admin -u "$USER" -p "$PASSWORD" \
+  --quiet --eval '
+sh.status()
+'
