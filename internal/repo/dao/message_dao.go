@@ -39,8 +39,8 @@ func (d *MongoMessageDao) Save(ctx context.Context, message *Message) error {
 	return err
 }
 
-func NewMongoMessageDao(shardingManager *xmongo.MongoManager) *MongoMessageDao {
+func NewMongoMessageDao(collManager *xmongo.CollManager) *MongoMessageDao {
 	return &MongoMessageDao{
-		coll: shardingManager.Collection("message"),
+		coll: collManager.Collection("message"),
 	}
 }

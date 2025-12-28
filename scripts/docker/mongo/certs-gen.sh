@@ -1,13 +1,17 @@
 #!/bin/bash
 
+# 配置变量
+KEY_SIZE=2048              # RSA 密钥长度
+CERT_VALIDITY_DAYS=3650    # 证书有效期（天）
+
 mkdir -p certs && cd certs
 
 # 生成 CA 私钥和证书
 echo ""
 echo "1. 生成 CA 证书..."
 if [ ! -f ca.key ]; then
-  openssl genrsa -out ca.key 4096
-  openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 \
+  openssl genrsa -out ca.key ${KEY_SIZE}
+  openssl req -x509 -new -nodes -key ca.key -sha256 -days ${CERT_VALIDITY_DAYS} \
     -out ca.pem \
     -subj "/CN=MongoDB-CA/O=MongoDB/C=CN"
   echo "✓ CA 证书生成完成"
@@ -16,7 +20,7 @@ else
 fi
 
 # 生成服务器私钥
-openssl genrsa -out mongo.key 4096
+openssl genrsa -out mongo.key ${KEY_SIZE}
 
 # 创建 SAN 配置文件
 cat > san.cnf << EOF
@@ -72,7 +76,7 @@ openssl req -new -key mongo.key \
 openssl x509 -req -in mongo.csr \
   -CA ca.pem -CAkey ca.key -CAcreateserial \
   -out mongo.crt \
-  -days 3650 -sha256 \
+  -days ${CERT_VALIDITY_DAYS} -sha256 \
   -extensions v3_req \
   -extfile san.cnf
 
@@ -96,7 +100,7 @@ generate_client_cert() {
     echo "  → 生成 ${CLIENT_NAME} 证书..."
 
     # 生成客户端私钥
-    openssl genrsa -out "${CLIENT_NAME}.key" 4096
+    openssl genrsa -out "${CLIENT_NAME}.key" ${KEY_SIZE}
 
     # 创建客户端证书配置
     cat > "${CLIENT_NAME}.cnf" << CLIENTEOF
@@ -129,7 +133,7 @@ CLIENTEOF
     openssl x509 -req -in "${CLIENT_NAME}.csr" \
       -CA ca.pem -CAkey ca.key -CAcreateserial \
       -out "${CLIENT_NAME}.crt" \
-      -days 3650 -sha256 \
+      -days ${CERT_VALIDITY_DAYS} -sha256 \
       -extensions v3_req \
       -extfile "${CLIENT_NAME}.cnf"
 

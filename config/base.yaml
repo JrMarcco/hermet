@@ -1,0 +1,48 @@
+profile:
+  env: dev
+
+hermet:
+  web:
+    addr: ":8080"
+    read_header_timeout: 5s # 读取请求头超时，防止 Slowloris 攻击
+    read_timeout: 15s       # 读取整个请求超时，IM 请求通常较小
+    write_timeout: 90s      # 写响应超时，历史记录数据量可能较大
+    idle_timeout: 120s      # Keep-Alive 空闲超时，IM 客户端会频繁请求
+
+  session:
+    expiration: 12h
+
+  cors:
+    max_age: 86400s
+    hostnames:
+      - "localhost"
+      - "172.19.208.1" # wsl ip
+
+  ignores:
+    - "/api/v1/user/sign-in"
+    - "/api/v1/user/refresh-token"
+
+jwt:
+  access:
+    expiration: 1h   # Access Token 过期时间
+    issuer: "hermet-access"
+    private: |
+      -----BEGIN PRIVATE KEY-----
+      MC4CAQAwBQYDK2VwBCIEINuchwbkYeYD/jnGLyPjRAufQGP+WUckh+PK6U4u7fk1
+      -----END PRIVATE KEY-----
+    public: |
+      -----BEGIN PUBLIC KEY-----
+      MCowBQYDK2VwAyEA818wiIDR2aqxvLKcyQL2qvVCYlSs2A/izQi/K109rlU=
+      -----END PUBLIC KEY-----
+
+  refresh:
+    expiration: 168h  # Refresh Token 过期时间
+    issuer: "hermet-refresh"
+    private: |
+      -----BEGIN PRIVATE KEY-----
+      MC4CAQAwBQYDK2VwBCIEIKPTxPL86hZ9ogcHUcl8RFnEK5+31567wtfNNi2fwOMv
+      -----END PRIVATE KEY-----
+    public: |
+      -----BEGIN PUBLIC KEY-----
+      MCowBQYDK2VwAyEAuulBhGrO5+ic3KquuV0hfO1KrOIjYC3OVtjzle+MqQI=
+      -----END PUBLIC KEY-----

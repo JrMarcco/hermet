@@ -2,6 +2,9 @@ package providers
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
 	"time"
 
 	"github.com/jrmarcco/hermet/internal/pkg/xmongo"
@@ -16,19 +19,35 @@ import (
 type mongoFxResult struct {
 	fx.Out
 
-	Client       *mongo.Client
-	MongoManager *xmongo.MongoManager
+	Client      *mongo.Client
+	CollManager *xmongo.CollManager
 }
 
 func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResult, error) {
 	cfg := mongoConfig{}
-	if err := viper.UnmarshalKey("mongo", &cfg); err != nil {
+	if err := viper.UnmarshalKey("mongodb", &cfg); err != nil {
 		return mongoFxResult{}, err
+	}
+
+	certPool := x509.NewCertPool()
+	if ok := certPool.AppendCertsFromPEM([]byte(cfg.TLS.CA)); !ok {
+		return mongoFxResult{}, fmt.Errorf("failed to append ca cert to pool")
+	}
+	clientCert, err := tls.X509KeyPair([]byte(cfg.TLS.CertPem), []byte(cfg.TLS.CertKey))
+	if err != nil {
+		return mongoFxResult{}, fmt.Errorf("failed to load client cert: %w", err)
+	}
+	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS13,
+		InsecureSkipVerify: false,
+		RootCAs:            certPool,
+		Certificates:       []tls.Certificate{clientCert},
 	}
 
 	opts := options.Client().
 		ApplyURI(cfg.URI).
 		SetAppName(cfg.AppName).
+		SetTLSConfig(tlsConfig).
 		SetMaxPoolSize(cfg.MaxPoolSize).
 		SetMaxConnIdleTime(cfg.MaxConnIdleTime).
 		SetConnectTimeout(cfg.ConnectTimeout).
@@ -47,7 +66,7 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResul
 		return mongoFxResult{}, err
 	}
 
-	mongoManger := xmongo.NewShardingManager(client, transMongoConfig(cfg))
+	collManager := xmongo.NewCollManager(client, cfg.DBName)
 
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -57,11 +76,8 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResul
 			if err := client.Ping(startupCtx, readpref.Primary()); err != nil {
 				return err
 			}
-			zapLogger.Info("[hermet-ioc] successfully connected to mongo", zap.String("uri", cfg.URI))
 
-			if err := mongoManger.InitSharding(ctx); err != nil {
-				return err
-			}
+			zapLogger.Info("[hermet-ioc] successfully connected to mongodb", zap.String("uri", cfg.URI))
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
@@ -69,18 +85,18 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResul
 			defer cancel()
 
 			if err := client.Disconnect(stopCtx); err != nil {
-				zapLogger.Error("[hermet-ioc] failed to disconnect from mongo", zap.Error(err))
+				zapLogger.Error("[hermet-ioc] failed to disconnect from mongodb", zap.Error(err))
 				return err
 			}
 
-			zapLogger.Info("[hermet-ioc] successfully disconnected from mongo")
+			zapLogger.Info("[hermet-ioc] successfully disconnected from mongodb")
 			return nil
 		},
 	})
 
 	return mongoFxResult{
-		Client:       client,
-		MongoManager: mongoManger,
+		Client:      client,
+		CollManager: collManager,
 	}, nil
 }
 
@@ -101,26 +117,11 @@ type mongoConfig struct {
 	StartupTimeout  time.Duration `mapstructure:"startup_timeout"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 
-	Sharding []mongoSharding `mapstructure:"sharding"`
+	TLS mongoTLSConfig `mapstructure:"tls"`
 }
 
-type mongoSharding struct {
-	CollectionName string `mapstructure:"collection_name"`
-	Key            string `mapstructure:"key"`
-	Type           string `mapstructure:"type"`
-}
-
-func transMongoConfig(cfg mongoConfig) xmongo.Config {
-	collections := make([]xmongo.ShardingColl, 0, len(cfg.Sharding))
-	for _, s := range cfg.Sharding {
-		collections = append(collections, xmongo.ShardingColl{
-			CollectionName: s.CollectionName,
-			Key:            s.Key,
-			Type:           s.Type,
-		})
-	}
-	return xmongo.Config{
-		DBName:        cfg.DBName,
-		ShardingColls: collections,
-	}
+type mongoTLSConfig struct {
+	CA      string `mapstructure:"ca"`
+	CertKey string `mapstructure:"cert_key"`
+	CertPem string `mapstructure:"cert_pem"`
 }

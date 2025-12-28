@@ -2,6 +2,8 @@
 
 # MongoDB 客户端证书生成工具
 
+KEY_SIZE=2048
+
 if [ -z "$1" ]; then
     echo "用法: $0 <客户端名称> [有效期天数]"
     echo ""
@@ -42,7 +44,7 @@ fi
 
 # 1. 生成私钥
 echo "1. 生成私钥..."
-openssl genrsa -out "${CLIENT_NAME}.key" 4096
+openssl genrsa -out "${CLIENT_NAME}.key" ${KEY_SIZE}
 echo "   ✓ 私钥生成完成"
 
 # 2. 创建证书配置
@@ -121,4 +123,3 @@ echo "    --tlsCAFile /path/to/ca.pem"
 echo ""
 echo "提示: 记得为此证书创建对应的 MongoDB 用户"
 echo ""
-

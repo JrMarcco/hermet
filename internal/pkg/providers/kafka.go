@@ -159,7 +159,7 @@ type kafkaConsumerConfig struct {
 }
 
 type kafkaTLSConfig struct {
-	CAFile string `mapstructure:"ca_file"`
+	CA string `mapstructure:"ca"`
 }
 
 type kafkaSaslConfig struct {
@@ -191,7 +191,7 @@ func loadKafkaConfig() (*kafkaConfig, error) {
 
 // configureKafkaTLS 配置 TLS。
 func configureKafkaTLS(tlsCfg kafkaTLSConfig, logger *zap.Logger) (*tls.Config, error) {
-	if tlsCfg.CAFile == "" {
+	if tlsCfg.CA == "" {
 		return nil, errors.New("CA file is required")
 	}
 
@@ -201,7 +201,7 @@ func configureKafkaTLS(tlsCfg kafkaTLSConfig, logger *zap.Logger) (*tls.Config, 
 	}
 
 	caCertPool := x509.NewCertPool()
-	if !caCertPool.AppendCertsFromPEM([]byte(tlsCfg.CAFile)) {
+	if !caCertPool.AppendCertsFromPEM([]byte(tlsCfg.CA)) {
 		logger.Error("[synp-ioc-kafka] failed to append CA certificate to pool for kafka")
 		return nil, fmt.Errorf("failed to append CA certificate to pool for kafka")
 	}
