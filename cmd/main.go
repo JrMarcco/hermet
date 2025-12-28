@@ -66,17 +66,6 @@ func main() {
 	).Run()
 }
 
-// func initViper() {
-// 	configFile := pflag.String("config", "etc/config.yaml", "path to config file")
-// 	pflag.Parse()
-
-// 	viper.SetConfigFile(*configFile)
-// 	viper.SetConfigType("yaml")
-// 	if err := viper.ReadInConfig(); err != nil {
-// 		panic(err)
-// 	}
-// }
-
 func loadConfig() error {
 	viper.AddConfigPath("config")
 	viper.SetConfigType("yaml")

@@ -23,6 +23,32 @@ type mongoFxResult struct {
 	CollManager *xmongo.CollManager
 }
 
+type mongoConfig struct {
+	URI     string `mapstructure:"uri"`
+	DBName  string `mapstructure:"db_name"`
+	AppName string `mapstructure:"app_name"`
+
+	AuthSource string `mapstructure:"auth_source"`
+	Username   string `mapstructure:"username"`
+	Password   string `mapstructure:"password"`
+
+	MaxPoolSize            uint64        `mapstructure:"max_pool_size"`
+	MaxConnIdleTime        time.Duration `mapstructure:"max_conn_idle_time"`
+	ConnectTimeout         time.Duration `mapstructure:"connect_timeout"`
+	ServerSelectionTimeout time.Duration `mapstructure:"server_selection_timeout"`
+
+	StartupTimeout  time.Duration `mapstructure:"startup_timeout"`
+	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
+
+	TLS mongoTLSConfig `mapstructure:"tls"`
+}
+
+type mongoTLSConfig struct {
+	CA      string `mapstructure:"ca"`
+	CertKey string `mapstructure:"cert_key"`
+	CertPem string `mapstructure:"cert_pem"`
+}
+
 func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResult, error) {
 	cfg := mongoConfig{}
 	if err := viper.UnmarshalKey("mongodb", &cfg); err != nil {
@@ -98,30 +124,4 @@ func newMongoClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (mongoFxResul
 		Client:      client,
 		CollManager: collManager,
 	}, nil
-}
-
-type mongoConfig struct {
-	URI     string `mapstructure:"uri"`
-	DBName  string `mapstructure:"db_name"`
-	AppName string `mapstructure:"app_name"`
-
-	AuthSource string `mapstructure:"auth_source"`
-	Username   string `mapstructure:"username"`
-	Password   string `mapstructure:"password"`
-
-	MaxPoolSize            uint64        `mapstructure:"max_pool_size"`
-	MaxConnIdleTime        time.Duration `mapstructure:"max_conn_idle_time"`
-	ConnectTimeout         time.Duration `mapstructure:"connect_timeout"`
-	ServerSelectionTimeout time.Duration `mapstructure:"server_selection_timeout"`
-
-	StartupTimeout  time.Duration `mapstructure:"startup_timeout"`
-	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
-
-	TLS mongoTLSConfig `mapstructure:"tls"`
-}
-
-type mongoTLSConfig struct {
-	CA      string `mapstructure:"ca"`
-	CertKey string `mapstructure:"cert_key"`
-	CertPem string `mapstructure:"cert_pem"`
 }
