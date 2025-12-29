@@ -35,7 +35,7 @@ INSERT INTO sys_user (
 ) VALUES (
     1,
     'jrmarcco@gmail.com',
-    '13800138000',
+    '13100131000',
     '',
     '$2a$10$besICPqbCRWOocqlsaKXV.rniGRyCNPLHeFT.osXbhgisW4XSW/um',
     'jrmarcco',
