@@ -16,8 +16,10 @@ type BizUser struct {
 	Passwd   string `gorm:"column:passwd"`
 	Nickname string `gorm:"column:nickname"`
 
-	CreateAt int64 `gorm:"column:create_at"`
-	UpdateAt int64 `gorm:"column:update_at"`
+	ProfileVer int `gorm:"column:profile_ver"`
+
+	CreatedAt int64 `gorm:"column:created_at"`
+	UpdatedAt int64 `gorm:"column:updated_at"`
 }
 
 func (BizUser) TableName() string {
@@ -42,17 +44,18 @@ type DefaultBizUserDao struct {
 
 func (d *DefaultBizUserDao) Save(ctx context.Context, user BizUser) (BizUser, error) {
 	now := time.Now().UnixMilli()
-	user.CreateAt = now
-	user.UpdateAt = now
+	user.CreatedAt = now
+	user.UpdatedAt = now
 
 	res := d.db.WithContext(ctx).Model(&BizUser{}).Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "id"}},
 		DoUpdates: clause.Assignments(map[string]any{
-			"email":     user.Email,
-			"avatar":    user.Avatar,
-			"passwd":    user.Passwd,
-			"nickname":  user.Nickname,
-			"update_at": now,
+			"email":       user.Email,
+			"avatar":      user.Avatar,
+			"passwd":      user.Passwd,
+			"nickname":    user.Nickname,
+			"profile_ver": gorm.Expr("profile_ver + 1"),
+			"updated_at":  now,
 		}),
 	}).Create(&user)
 	if res.Error != nil {

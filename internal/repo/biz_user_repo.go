@@ -58,27 +58,29 @@ func (r *DefaultBizUserRepo) FindByMobile(ctx context.Context, mobile string) (d
 
 func (r *DefaultBizUserRepo) toEntity(user domain.BizUser) dao.BizUser {
 	return dao.BizUser{
-		ID:       user.ID,
-		Email:    user.Email,
-		Mobile:   user.Mobile,
-		Avatar:   user.Avatar,
-		Passwd:   user.Passwd,
-		Nickname: user.Nickname,
-		CreateAt: user.CreateAt,
-		UpdateAt: user.UpdateAt,
+		ID:         user.ID,
+		Email:      user.Email,
+		Mobile:     user.Mobile,
+		Avatar:     user.Avatar,
+		Passwd:     user.Passwd,
+		Nickname:   user.Nickname,
+		ProfileVer: user.ProfileVer,
+		CreatedAt:  user.CreatedAt,
+		UpdatedAt:  user.UpdatedAt,
 	}
 }
 
 func (r *DefaultBizUserRepo) toDomain(user dao.BizUser) domain.BizUser {
 	return domain.BizUser{
-		ID:       user.ID,
-		Email:    user.Email,
-		Mobile:   user.Mobile,
-		Avatar:   user.Avatar,
-		Passwd:   user.Passwd,
-		Nickname: user.Nickname,
-		CreateAt: user.CreateAt,
-		UpdateAt: user.UpdateAt,
+		ID:         user.ID,
+		Email:      user.Email,
+		Mobile:     user.Mobile,
+		Avatar:     user.Avatar,
+		Passwd:     user.Passwd,
+		Nickname:   user.Nickname,
+		ProfileVer: user.ProfileVer,
+		CreatedAt:  user.CreatedAt,
+		UpdatedAt:  user.UpdatedAt,
 	}
 }
 

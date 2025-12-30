@@ -9,8 +9,10 @@ type BizUser struct {
 	Passwd   string `json:"passwd"`
 	Nickname string `json:"nickname"`
 
-	CreateAt int64 `json:"createAt"`
-	UpdateAt int64 `json:"updateAt"`
+	ProfileVer int `json:"profileVer"`
+
+	CreatedAt int64 `json:"createdAt"`
+	UpdatedAt int64 `json:"updatedAt"`
 
 	ReadRecords ChannelReadRecords `json:"readRecords"`
 }
