@@ -19,6 +19,18 @@ type JwtBuilder struct {
 	ignores   xset.Set[string]
 }
 
+func NewJwtBuilder(
+	handler webjwt.Handler,
+	atManager xjwt.Manager[authv1.JwtPayload],
+	ignores xset.Set[string],
+) *JwtBuilder {
+	return &JwtBuilder{
+		handler:   handler,
+		atManager: atManager,
+		ignores:   ignores,
+	}
+}
+
 func (b *JwtBuilder) Build() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if b.ignores != nil && b.ignores.Exist(ctx.Request.URL.Path) {
@@ -44,15 +56,5 @@ func (b *JwtBuilder) Build() gin.HandlerFunc {
 			SID: decrypted.Data.SessionId,
 		})
 		ctx.Next()
-	}
-}
-
-func NewJwtBuilder(
-	handler webjwt.Handler, atManager xjwt.Manager[authv1.JwtPayload], ignores xset.Set[string],
-) *JwtBuilder {
-	return &JwtBuilder{
-		handler:   handler,
-		atManager: atManager,
-		ignores:   ignores,
 	}
 }

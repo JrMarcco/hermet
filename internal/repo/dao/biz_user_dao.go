@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -12,11 +13,10 @@ type BizUser struct {
 	ID       uint64 `gorm:"column:id"`
 	Email    string `gorm:"column:email"`
 	Mobile   string `gorm:"column:mobile"`
-	Avatar   string `gorm:"column:avatar"`
 	Passwd   string `gorm:"column:passwd"`
 	Nickname string `gorm:"column:nickname"`
 
-	ProfileVer int `gorm:"column:profile_ver"`
+	Avatar sql.NullString `gorm:"column:avatar"`
 
 	CreatedAt int64 `gorm:"column:created_at"`
 	UpdatedAt int64 `gorm:"column:updated_at"`
@@ -40,6 +40,10 @@ var _ BizUserDao = (*DefaultBizUserDao)(nil)
 
 type DefaultBizUserDao struct {
 	db *gorm.DB
+}
+
+func NewDefaultBizUserDao(db *gorm.DB) *DefaultBizUserDao {
+	return &DefaultBizUserDao{db: db}
 }
 
 func (d *DefaultBizUserDao) Save(ctx context.Context, user BizUser) (BizUser, error) {
@@ -86,8 +90,4 @@ func (d *DefaultBizUserDao) FindByMobile(ctx context.Context, mobile string) (Bi
 		Where("mobile = ?", mobile).
 		First(&user).Error
 	return user, err
-}
-
-func NewDefaultBizUserDao(db *gorm.DB) *DefaultBizUserDao {
-	return &DefaultBizUserDao{db: db}
 }

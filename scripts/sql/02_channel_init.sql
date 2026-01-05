@@ -2,6 +2,9 @@
 DROP TYPE IF EXISTS channel_type_enum CASCADE;
 CREATE TYPE channel_type_enum AS ENUM ('single', 'group');
 
+DROP TYPE IF EXISTS channel_status_enum CASCADE;
+CREATE TYPE channel_status_enum AS ENUM ('creating', 'active', 'failed','archived');
+
 -- 频道表 ( 聊天会话表 )
 DROP TABLE IF EXISTS channel;
 CREATE TABLE channel (
@@ -9,6 +12,7 @@ CREATE TABLE channel (
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     channel_name VARCHAR(128) NOT NULL DEFAULT '',
     channel_type channel_type_enum NOT NULL,
+    channel_status channel_status_enum NOT NULL,
     creator BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL
@@ -17,7 +21,8 @@ CREATE TABLE channel (
 COMMENT ON TABLE channel IS '频道表 ( 聊天会话表 )';
 COMMENT ON COLUMN channel.id IS '频道 ID';
 COMMENT ON COLUMN channel.channel_name IS '频道名称 ( 单聊为空，群聊有名称 )';
-COMMENT ON COLUMN channel.channel_type IS '频道类型 ( single=单聊, group=群聊 )';
+COMMENT ON COLUMN channel.channel_type IS '频道类型 ( single=单聊 / group=群聊 )';
+COMMENT ON COLUMN channel.channel_status IS '频道状态 ( creating=创建中 / active=活跃 / failed=失败 / archived=已归档 )';
 COMMENT ON COLUMN channel.avatar IS '频道头像';
 COMMENT ON COLUMN channel.creator IS '创建者';
 COMMENT ON COLUMN channel.created_at IS '创建时间戳 ( Unix 毫秒值 )';
@@ -91,3 +96,38 @@ COMMENT ON COLUMN channel_read_record.updated_at IS '更新时间戳 ( Unix 毫�
 
 -- 创建索引
 CREATE INDEX idx_channel_read_user_channel ON channel_read_record(user_id, channel_id);
+
+
+
+-- 用户频道
+DROP TABLE IF EXISTS user_channel;
+CREATE TABLE user_channel (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    channel_id BIGINT NOT NULL,
+    channel_type channel_type_enum NOT NULL,
+    channel_name VARCHAR(128) NOT NULL DEFAULT '',
+    channel_avatar VARCHAR(256) NOT NULL DEFAULT '',
+    channel_mute BOOLEAN NOT NULL DEFAULT FALSE,
+    channel_join_at BIGINT NOT NULL,
+    channel_leave_at BIGINT NOT NULL,
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL,
+    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+);
+
+COMMENT ON TABLE user_channel IS '用户频道表';
+COMMENT ON COLUMN user_channel.id IS '主键 ID';
+COMMENT ON COLUMN user_channel.user_id IS '用户 ID';
+COMMENT ON COLUMN user_channel.channel_id IS '频道 ID';
+COMMENT ON COLUMN user_channel.channel_type IS '频道类型 ( single=单聊, group=群聊 )';
+COMMENT ON COLUMN user_channel.channel_name IS '频道名称 ( 单聊为空，群聊有名称 )';
+COMMENT ON COLUMN user_channel.channel_avatar IS '频道头像';
+COMMENT ON COLUMN user_channel.channel_mute IS '是否免打扰';
+COMMENT ON COLUMN user_channel.channel_join_at IS '加入时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_channel.channel_leave_at IS '离开时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_channel.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_channel.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+
+-- 创建索引
+CREATE INDEX idx_user_channel_user ON user_channel(user_id);

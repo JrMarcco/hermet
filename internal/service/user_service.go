@@ -30,6 +30,22 @@ type DefaultUserService struct {
 	rtManager xjwt.Manager[authv1.JwtPayload]
 }
 
+func NewDefaultUserService(
+	repo repo.BizUserRepo,
+	messageRepo repo.MessageRepo,
+
+	atManager xjwt.Manager[authv1.JwtPayload],
+	rtManager xjwt.Manager[authv1.JwtPayload],
+) *DefaultUserService {
+	return &DefaultUserService{
+		repo:        repo,
+		messageRepo: messageRepo,
+
+		atManager: atManager,
+		rtManager: rtManager,
+	}
+}
+
 func (s *DefaultUserService) SignIn(ctx context.Context, account, accountType, credential string) (user xgin.ContextUser, err error) {
 	switch accountType {
 	case accountTypeEmail:
@@ -85,20 +101,4 @@ func (s *DefaultUserService) VerifyRefreshToken(_ context.Context, refreshToken 
 		UID: decrypted.Data.UserId,
 		SID: decrypted.Data.SessionId,
 	}, nil
-}
-
-func NewDefaultUserService(
-	repo repo.BizUserRepo,
-	messageRepo repo.MessageRepo,
-
-	atManager xjwt.Manager[authv1.JwtPayload],
-	rtManager xjwt.Manager[authv1.JwtPayload],
-) *DefaultUserService {
-	return &DefaultUserService{
-		repo:        repo,
-		messageRepo: messageRepo,
-
-		atManager: atManager,
-		rtManager: rtManager,
-	}
 }

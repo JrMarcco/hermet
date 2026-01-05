@@ -31,16 +31,16 @@ type MongoMessageDao struct {
 	coll *mongo.Collection
 }
 
+func NewMongoMessageDao(collManager *xmongo.CollManager) *MongoMessageDao {
+	return &MongoMessageDao{
+		coll: collManager.Collection("message"),
+	}
+}
+
 // Save 保存消息。
 // 注意：message 必须是指针类型，因为 MongoDB 的插入操作会修改 message 的值 ( 如 ID 回传) 。
 // 同时 Content 字段为 []byte，使用指针类型可以有效避免内存拷贝。
 func (d *MongoMessageDao) Save(ctx context.Context, message *Message) error {
 	_, err := d.coll.InsertOne(ctx, message)
 	return err
-}
-
-func NewMongoMessageDao(collManager *xmongo.CollManager) *MongoMessageDao {
-	return &MongoMessageDao{
-		coll: collManager.Collection("message"),
-	}
 }

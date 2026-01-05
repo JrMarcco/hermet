@@ -7,13 +7,13 @@ type CollManager struct {
 	dbName string
 }
 
-func (m *CollManager) Collection(name string) *mongo.Collection {
-	return m.client.Database(m.dbName).Collection(name)
-}
-
 func NewCollManager(client *mongo.Client, dbName string) *CollManager {
 	return &CollManager{
 		client: client,
 		dbName: dbName,
 	}
+}
+
+func (m *CollManager) Collection(name string) *mongo.Collection {
+	return m.client.Database(m.dbName).Collection(name)
 }

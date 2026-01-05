@@ -14,7 +14,6 @@ const (
 
 // ChannelCreatedEvent 频道创建事件。
 type ChannelCreatedEvent struct {
-	CID         uint64 `json:"cid"`
 	ChannelType string `json:"channelType"`
 	ChannelName string `json:"channelName"`
 

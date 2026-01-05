@@ -9,8 +9,6 @@ type BizUser struct {
 	Passwd   string `json:"passwd"`
 	Nickname string `json:"nickname"`
 
-	ProfileVer int `json:"profileVer"`
-
 	CreatedAt int64 `json:"createdAt"`
 	UpdatedAt int64 `json:"updatedAt"`
 

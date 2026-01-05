@@ -23,6 +23,14 @@ type UserHandler struct {
 	logger *zap.Logger
 }
 
+func NewUserHandler(handler webjwt.Handler, svc service.UserService, logger *zap.Logger) *UserHandler {
+	return &UserHandler{
+		Handler: handler,
+		svc:     svc,
+		logger:  logger,
+	}
+}
+
 func (h *UserHandler) Register(engine *gin.Engine) {
 	userV1 := engine.Group("api/v1/user")
 	userV1.Handle(http.MethodPost, "/sign-in", xgin.B(h.SignIn))
@@ -132,12 +140,4 @@ func (h *UserHandler) SignOut(ctx *gin.Context) (xgin.R, error) {
 		Code: http.StatusOK,
 		Msg:  "signed out",
 	}, nil
-}
-
-func NewUserHandler(handler webjwt.Handler, svc service.UserService, logger *zap.Logger) *UserHandler {
-	return &UserHandler{
-		Handler: handler,
-		svc:     svc,
-		logger:  logger,
-	}
 }

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jrmarcco/hermet/internal/domain"
 	"github.com/jrmarcco/hermet/internal/repo/dao"
@@ -57,31 +58,40 @@ func (r *DefaultBizUserRepo) FindByMobile(ctx context.Context, mobile string) (d
 }
 
 func (r *DefaultBizUserRepo) toEntity(user domain.BizUser) dao.BizUser {
-	return dao.BizUser{
-		ID:         user.ID,
-		Email:      user.Email,
-		Mobile:     user.Mobile,
-		Avatar:     user.Avatar,
-		Passwd:     user.Passwd,
-		Nickname:   user.Nickname,
-		ProfileVer: user.ProfileVer,
-		CreatedAt:  user.CreatedAt,
-		UpdatedAt:  user.UpdatedAt,
+	e := dao.BizUser{
+		ID:        user.ID,
+		Email:     user.Email,
+		Mobile:    user.Mobile,
+		Passwd:    user.Passwd,
+		Nickname:  user.Nickname,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
+
+	e.Avatar = sql.NullString{
+		String: user.Avatar,
+		Valid:  user.Avatar != "",
+	}
+
+	return e
 }
 
 func (r *DefaultBizUserRepo) toDomain(user dao.BizUser) domain.BizUser {
-	return domain.BizUser{
-		ID:         user.ID,
-		Email:      user.Email,
-		Mobile:     user.Mobile,
-		Avatar:     user.Avatar,
-		Passwd:     user.Passwd,
-		Nickname:   user.Nickname,
-		ProfileVer: user.ProfileVer,
-		CreatedAt:  user.CreatedAt,
-		UpdatedAt:  user.UpdatedAt,
+	d := domain.BizUser{
+		ID:        user.ID,
+		Email:     user.Email,
+		Mobile:    user.Mobile,
+		Passwd:    user.Passwd,
+		Nickname:  user.Nickname,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
+
+	if user.Avatar.Valid {
+		d.Avatar = user.Avatar.String
+	}
+
+	return d
 }
 
 func NewDefaultBizUserRepo(dao dao.BizUserDao) *DefaultBizUserRepo {

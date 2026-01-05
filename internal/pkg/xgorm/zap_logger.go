@@ -21,6 +21,37 @@ type ZapLogger struct {
 	ignoreRecordNotFoundError bool
 }
 
+func WithLogLevel(level logger.LogLevel) option.Opt[ZapLogger] {
+	return func(zl *ZapLogger) {
+		zl.logLevel = level
+	}
+}
+
+func WithSlowThreshold(threshold time.Duration) option.Opt[ZapLogger] {
+	return func(zl *ZapLogger) {
+		zl.slowThreshold = threshold
+	}
+}
+
+func WithIgnoreRecordNotFoundError(ignore bool) option.Opt[ZapLogger] {
+	return func(zl *ZapLogger) {
+		zl.ignoreRecordNotFoundError = ignore
+	}
+}
+
+func NewZapLogger(zLogger *zap.Logger, opts ...option.Opt[ZapLogger]) *ZapLogger {
+	const defaultSlowThreshold = 100 * time.Millisecond
+	zl := &ZapLogger{
+		zLogger:                   zLogger,
+		logLevel:                  logger.Warn,
+		slowThreshold:             defaultSlowThreshold,
+		ignoreRecordNotFoundError: false,
+	}
+
+	option.Apply(zl, opts...)
+	return zl
+}
+
 func (zl *ZapLogger) LogMode(level logger.LogLevel) logger.Interface {
 	newLogger := *zl
 	newLogger.logLevel = level
@@ -69,36 +100,5 @@ func (zl *ZapLogger) Trace(_ context.Context, begin time.Time, fc func() (string
 		zl.zLogger.Warn("gorm slow query", fields...)
 	case zl.logLevel >= logger.Info:
 		zl.zLogger.Info("gorm query", fields...)
-	}
-}
-
-func NewZapLogger(zLogger *zap.Logger, opts ...option.Opt[ZapLogger]) *ZapLogger {
-	const defaultSlowThreshold = 100 * time.Millisecond
-	zl := &ZapLogger{
-		zLogger:                   zLogger,
-		logLevel:                  logger.Warn,
-		slowThreshold:             defaultSlowThreshold,
-		ignoreRecordNotFoundError: false,
-	}
-
-	option.Apply(zl, opts...)
-	return zl
-}
-
-func WithLogLevel(level logger.LogLevel) option.Opt[ZapLogger] {
-	return func(zl *ZapLogger) {
-		zl.logLevel = level
-	}
-}
-
-func WithSlowThreshold(threshold time.Duration) option.Opt[ZapLogger] {
-	return func(zl *ZapLogger) {
-		zl.slowThreshold = threshold
-	}
-}
-
-func WithIgnoreRecordNotFoundError(ignore bool) option.Opt[ZapLogger] {
-	return func(zl *ZapLogger) {
-		zl.ignoreRecordNotFoundError = ignore
 	}
 }

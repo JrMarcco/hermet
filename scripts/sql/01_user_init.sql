@@ -7,7 +7,6 @@ CREATE TABLE biz_user (
     avatar VARCHAR(256) DEFAULT '' NOT NULL,
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
-    profile_ver INT NOT NULL DEFAULT 1,
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
     CONSTRAINT uk_mobile UNIQUE (mobile)
@@ -20,7 +19,6 @@ COMMENT ON COLUMN biz_user.mobile IS '手机';
 COMMENT ON COLUMN biz_user.avatar IS '头像';
 COMMENT ON COLUMN biz_user.passwd IS '密码（请存储哈希后的值）';
 COMMENT ON COLUMN biz_user.nickname IS '昵称';
-COMMENT ON COLUMN biz_user.profile_ver IS '用户信息版本号';
 COMMENT ON COLUMN biz_user.created_at IS '创建时间戳 ( Unix 毫秒值 )';
 COMMENT ON COLUMN biz_user.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
@@ -36,7 +34,6 @@ INSERT INTO biz_user (
     avatar,
     passwd,
     nickname,
-    profile_ver,
     created_at,
     updated_at
 ) VALUES (
@@ -46,7 +43,6 @@ INSERT INTO biz_user (
     '',
     '$2a$10$besICPqbCRWOocqlsaKXV.rniGRyCNPLHeFT.osXbhgisW4XSW/um',
     'jrmarcco',
-    1,
     EXTRACT(EPOCH FROM NOW()) * 1000,
     EXTRACT(EPOCH FROM NOW()) * 1000
 );

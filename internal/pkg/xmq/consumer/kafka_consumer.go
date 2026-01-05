@@ -24,14 +24,14 @@ type KafkaConsumerFactory struct {
 	readerCreateFunc KafkaReaderCreateFunc
 }
 
-func (f *KafkaConsumerFactory) NewConsumer(topic, groupID string) (Consumer, error) {
-	return NewKafkaConsumer(topic, groupID, f.readerCreateFunc), nil
-}
-
 func NewKafkaConsumerFactory(readerCreateFunc KafkaReaderCreateFunc) *KafkaConsumerFactory {
 	return &KafkaConsumerFactory{
 		readerCreateFunc: readerCreateFunc,
 	}
+}
+
+func (f *KafkaConsumerFactory) NewConsumer(topic, groupID string) (Consumer, error) {
+	return NewKafkaConsumer(topic, groupID, f.readerCreateFunc), nil
 }
 
 var _ Consumer = (*KafkaConsumer)(nil)
@@ -51,6 +51,26 @@ type KafkaConsumer struct {
 	cancelFunc context.CancelFunc
 
 	closeOnce sync.Once
+}
+
+func NewKafkaConsumer(topic, groupID string, readerCreateFunc KafkaReaderCreateFunc) *KafkaConsumer {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	reader := readerCreateFunc(topic, groupID)
+	consumer := &KafkaConsumer{
+		topic:   topic,
+		groupID: groupID,
+
+		reader: reader,
+
+		messageChan: make(chan *xmq.Message, defaultMessageChanSize),
+
+		ctx:        ctx,
+		cancelFunc: cancel,
+	}
+
+	go consumer.readMessage()
+	return consumer
 }
 
 func (c *KafkaConsumer) Consume(ctx context.Context) (*xmq.Message, error) {
@@ -127,24 +147,4 @@ func (c *KafkaConsumer) Close() error {
 		err = c.reader.Close()
 	})
 	return err
-}
-
-func NewKafkaConsumer(topic, groupID string, readerCreateFunc KafkaReaderCreateFunc) *KafkaConsumer {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	reader := readerCreateFunc(topic, groupID)
-	consumer := &KafkaConsumer{
-		topic:   topic,
-		groupID: groupID,
-
-		reader: reader,
-
-		messageChan: make(chan *xmq.Message, defaultMessageChanSize),
-
-		ctx:        ctx,
-		cancelFunc: cancel,
-	}
-
-	go consumer.readMessage()
-	return consumer
 }
