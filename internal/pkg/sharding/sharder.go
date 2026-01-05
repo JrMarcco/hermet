@@ -80,8 +80,8 @@ var _ Sharder = (*StringSharder)(nil)
 // 使用哈希算法保证分片均匀分布。
 //
 // 典型使用场景：
-// - 生成用户 ID 时，基于 email 计算 shardVal
-// - 基于手机号、用户名等稳定标识进行分片
+// - 生成用户 ID 时，基于 email 计算 shardVal。
+// - 基于手机号、用户名等稳定标识进行分片。
 type StringSharder struct {
 	key string
 }
