@@ -32,10 +32,11 @@ func NewAuthHandler(handler webjwt.Handler, svc service.AuthService, logger *zap
 }
 
 func (h *AuthHandler) Register(engine *gin.Engine) {
-	userV1 := engine.Group("api/v1/auth")
-	userV1.Handle(http.MethodPost, "/sign-in", xgin.B(h.SignIn))
-	userV1.Handle(http.MethodPost, "/refresh-token", xgin.B(h.RefreshToken))
-	userV1.Handle(http.MethodPost, "/sign-out", xgin.W(h.SignOut))
+	authV1 := engine.Group("api/v1/auth")
+
+	authV1.Handle(http.MethodPost, "/sign-in", xgin.B(h.SignIn))
+	authV1.Handle(http.MethodPost, "/refresh-token", xgin.B(h.RefreshToken))
+	authV1.Handle(http.MethodPost, "/sign-out", xgin.W(h.SignOut))
 }
 
 type signInRequest struct {
