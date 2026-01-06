@@ -10,25 +10,23 @@ import (
 var ServiceFxModule = fx.Module(
 	"service",
 	fx.Provide(
-		newUserService,
+		newAuthService,
 	),
 )
 
-type userServiceFxParams struct {
+type authServiceFxParams struct {
 	fx.In
 
-	Repo        repo.BizUserRepo
-	MessageRepo repo.MessageRepo
+	Repo repo.BizUserRepo
 
 	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
 	RtManager xjwt.Manager[authv1.JwtPayload] `name:"refresh-token-manager"`
 }
 
-// newUserService 作为适配器，将 fx 的参数结构体转换为普通的函数调用。
-func newUserService(p userServiceFxParams) UserService {
-	return NewDefaultUserService(
+// newAuthService 作为适配器，将 fx 的参数结构体转换为普通的函数调用。
+func newAuthService(p authServiceFxParams) AuthService {
+	return NewDefaultAuthService(
 		p.Repo,
-		p.MessageRepo,
 		p.AtManager,
 		p.RtManager,
 	)

@@ -2,7 +2,7 @@
 
 ### Sign In
 # @name signIn
-POST {{uri}}/api/v1/user/sign-in
+POST {{uri}}/api/v1/auth/sign-in
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 
 
 ### Refresh Access Token
-POST {{uri}}/api/v1/user/refresh-token
+POST {{uri}}/api/v1/auth/refresh-token
 Content-Type: application/json
 
 {

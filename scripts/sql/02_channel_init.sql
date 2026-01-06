@@ -8,7 +8,7 @@ CREATE TYPE channel_status_enum AS ENUM ('creating', 'active', 'failed','archive
 -- 频道表 ( 聊天会话表 )
 DROP TABLE IF EXISTS channel;
 CREATE TABLE channel (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     channel_name VARCHAR(128) NOT NULL DEFAULT '',
     channel_type channel_type_enum NOT NULL,

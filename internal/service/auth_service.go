@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService interface {
+type AuthService interface {
 	SignIn(ctx context.Context, account, accountType, credential string) (user xgin.ContextUser, err error)
 	GenerateToken(ctx context.Context, user xgin.ContextUser) (accessToken, refreshToken string, err error)
 	VerifyRefreshToken(ctx context.Context, refreshToken string) (user xgin.ContextUser, err error)
@@ -20,33 +20,30 @@ type UserService interface {
 
 const accountTypeEmail = "email"
 
-var _ UserService = (*DefaultUserService)(nil)
+var _ AuthService = (*DefaultAuthService)(nil)
 
-type DefaultUserService struct {
-	repo        repo.BizUserRepo
-	messageRepo repo.MessageRepo
+type DefaultAuthService struct {
+	repo repo.BizUserRepo
 
 	atManager xjwt.Manager[authv1.JwtPayload]
 	rtManager xjwt.Manager[authv1.JwtPayload]
 }
 
-func NewDefaultUserService(
+func NewDefaultAuthService(
 	repo repo.BizUserRepo,
-	messageRepo repo.MessageRepo,
 
 	atManager xjwt.Manager[authv1.JwtPayload],
 	rtManager xjwt.Manager[authv1.JwtPayload],
-) *DefaultUserService {
-	return &DefaultUserService{
-		repo:        repo,
-		messageRepo: messageRepo,
+) *DefaultAuthService {
+	return &DefaultAuthService{
+		repo: repo,
 
 		atManager: atManager,
 		rtManager: rtManager,
 	}
 }
 
-func (s *DefaultUserService) SignIn(ctx context.Context, account, accountType, credential string) (user xgin.ContextUser, err error) {
+func (s *DefaultAuthService) SignIn(ctx context.Context, account, accountType, credential string) (user xgin.ContextUser, err error) {
 	switch accountType {
 	case accountTypeEmail:
 		return s.signInByEmail(ctx, account, credential)
@@ -55,7 +52,7 @@ func (s *DefaultUserService) SignIn(ctx context.Context, account, accountType, c
 	}
 }
 
-func (s *DefaultUserService) signInByEmail(ctx context.Context, account, credential string) (xgin.ContextUser, error) {
+func (s *DefaultAuthService) signInByEmail(ctx context.Context, account, credential string) (xgin.ContextUser, error) {
 	user, err := s.repo.FindByEmail(ctx, account)
 	if err != nil {
 		return xgin.ContextUser{}, err
@@ -71,7 +68,7 @@ func (s *DefaultUserService) signInByEmail(ctx context.Context, account, credent
 	}, nil
 }
 
-func (s *DefaultUserService) GenerateToken(_ context.Context, user xgin.ContextUser) (accessToken, refreshToken string, err error) {
+func (s *DefaultAuthService) GenerateToken(_ context.Context, user xgin.ContextUser) (accessToken, refreshToken string, err error) {
 	at, err := s.atManager.Encrypt(authv1.JwtPayload{
 		BizId:     user.BID,
 		UserId:    user.UID,
@@ -91,7 +88,7 @@ func (s *DefaultUserService) GenerateToken(_ context.Context, user xgin.ContextU
 	return at, rt, nil
 }
 
-func (s *DefaultUserService) VerifyRefreshToken(_ context.Context, refreshToken string) (user xgin.ContextUser, err error) {
+func (s *DefaultAuthService) VerifyRefreshToken(_ context.Context, refreshToken string) (user xgin.ContextUser, err error) {
 	decrypted, err := s.rtManager.Decrypt(refreshToken)
 	if err != nil {
 		return xgin.ContextUser{}, err

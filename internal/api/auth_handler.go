@@ -14,25 +14,25 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ xgin.RouteRegistry = (*UserHandler)(nil)
+var _ xgin.RouteRegistry = (*AuthHandler)(nil)
 
-type UserHandler struct {
+type AuthHandler struct {
 	webjwt.Handler
 
-	svc    service.UserService
+	svc    service.AuthService
 	logger *zap.Logger
 }
 
-func NewUserHandler(handler webjwt.Handler, svc service.UserService, logger *zap.Logger) *UserHandler {
-	return &UserHandler{
+func NewAuthHandler(handler webjwt.Handler, svc service.AuthService, logger *zap.Logger) *AuthHandler {
+	return &AuthHandler{
 		Handler: handler,
 		svc:     svc,
 		logger:  logger,
 	}
 }
 
-func (h *UserHandler) Register(engine *gin.Engine) {
-	userV1 := engine.Group("api/v1/user")
+func (h *AuthHandler) Register(engine *gin.Engine) {
+	userV1 := engine.Group("api/v1/auth")
 	userV1.Handle(http.MethodPost, "/sign-in", xgin.B(h.SignIn))
 	userV1.Handle(http.MethodPost, "/refresh-token", xgin.B(h.RefreshToken))
 	userV1.Handle(http.MethodPost, "/sign-out", xgin.W(h.SignOut))
@@ -49,7 +49,7 @@ type tokenResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (h *UserHandler) SignIn(ctx *gin.Context, req signInRequest) (xgin.R, error) {
+func (h *AuthHandler) SignIn(ctx *gin.Context, req signInRequest) (xgin.R, error) {
 	au, err := h.svc.SignIn(ctx, req.Account, req.AccountType, req.Credential)
 	if err != nil {
 		return xgin.R{}, err
@@ -78,7 +78,7 @@ type refreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (h *UserHandler) RefreshToken(ctx *gin.Context, req refreshTokenRequest) (xgin.R, error) {
+func (h *AuthHandler) RefreshToken(ctx *gin.Context, req refreshTokenRequest) (xgin.R, error) {
 	au, err := h.svc.VerifyRefreshToken(ctx, req.RefreshToken)
 	if err != nil {
 		return xgin.R{}, err
@@ -110,7 +110,7 @@ func (h *UserHandler) RefreshToken(ctx *gin.Context, req refreshTokenRequest) (x
 	}, nil
 }
 
-func (h *UserHandler) SignOut(ctx *gin.Context) (xgin.R, error) {
+func (h *AuthHandler) SignOut(ctx *gin.Context) (xgin.R, error) {
 	val, ok := ctx.Get(xgin.ContextKeyAuthUser)
 	if !ok {
 		return xgin.R{

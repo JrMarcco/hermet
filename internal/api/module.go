@@ -9,7 +9,7 @@ var APIFxModule = fx.Module(
 	"api",
 	fx.Provide(
 		fx.Annotate(
-			NewUserHandler,
+			NewAuthHandler,
 			fx.As(new(xgin.RouteRegistry)),
 			fx.ResultTags(`group:"api_registry"`),
 		),

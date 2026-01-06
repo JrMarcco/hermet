@@ -1,7 +1,7 @@
 -- 系统用户信息表
 DROP TABLE IF EXISTS biz_user;
 CREATE TABLE biz_user (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     email VARCHAR(128) NOT NULL,
     mobile VARCHAR(16) NOT NULL,
     avatar VARCHAR(256) DEFAULT '' NOT NULL,
