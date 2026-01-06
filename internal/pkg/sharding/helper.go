@@ -28,6 +28,10 @@ type ShardHelper struct {
 
 // NewShardHelper 创建分片辅助工具。
 // 参数不能为 nil。
+//
+// 注意：
+//
+//	使用此方法时，需要确保 Generator 和 Strategy 中的 Extractor 是配套的。
 func NewShardHelper(gen idgen.Generator, strategy Strategy) (*ShardHelper, error) {
 	if gen == nil {
 		return nil, errors.New("generator cannot be nil")
