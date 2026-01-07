@@ -25,7 +25,7 @@ COMMENT ON COLUMN biz_user.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 CREATE INDEX idx_biz_user_email ON biz_user(email);
 CREATE INDEX idx_biz_user_mobile ON biz_user(mobile);
 
-插入初始用户数据
+-- 插入初始用户数据
 INSERT INTO biz_user (
     id,
     email,
@@ -37,6 +37,28 @@ INSERT INTO biz_user (
     updated_at
 ) VALUES (
     1,
+    'jrmarcco@gmail.com',
+    '13100131000',
+    '',
+    '$2a$10$besICPqbCRWOocqlsaKXV.rniGRyCNPLHeFT.osXbhgisW4XSW/um',
+    'jrmarcco',
+    EXTRACT(EPOCH FROM NOW()) * 1000,
+    EXTRACT(EPOCH FROM NOW()) * 1000
+);
+
+-- hermet_0
+-- 以 jrmarcco@gmail.com 为 sharder 插入数据
+INSERT INTO biz_user_2 (
+    id,
+    email,
+    mobile,
+    avatar,
+    passwd,
+    nickname,
+    created_at,
+    updated_at
+) VALUES (
+    134605228232032256,
     'jrmarcco@gmail.com',
     '13100131000',
     '',
