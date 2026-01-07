@@ -299,12 +299,12 @@ process_single_file() {
     echo "配置: DB_COUNT=$DB_COUNT, TABLE_COUNT=$TABLE_COUNT"
     echo ""
 
-    # 创建输出目录。
-    mkdir -p "$OUTPUT_DIR"
-
     # 为每个数据库分片生成 SQL。
     for ((db_idx=0; db_idx<DB_COUNT; db_idx++)); do
-        local output_file="${OUTPUT_DIR}/${base_name}_db${db_idx}.sql"
+        local db_dir="${OUTPUT_DIR}/db_${db_idx}"
+        # 创建数据库子目录
+        mkdir -p "$db_dir"
+        local output_file="${db_dir}/${base_name}.sql"
         generate_sharding_sql "$input_file" "$db_idx" "$output_file"
     done
 
