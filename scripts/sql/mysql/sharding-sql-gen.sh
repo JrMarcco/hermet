@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 分库分表SQL脚本生成工具 ( MySQL版本 )
+# 分库分表 SQL 脚本生成工具 ( MySQL 版本 )
 # 用法: ./sharding-sql-gen.sh [选项]
 #
 # 选项:
@@ -10,7 +10,6 @@
 #   -o, --output-dir DIR      输出目录 ( 默认: ./sharding )
 #   -p, --db-prefix PREFIX    数据库名前缀 ( 必填 )
 #   --all                     处理所有 ./*.sql 文件
-#   --gen-db                  生成数据库初始化脚本
 #   -h, --help                显示帮助信息
 
 set -e
@@ -32,7 +31,7 @@ NC='\033[0m' # No Color
 # 显示帮助信息
 show_help() {
     cat << EOF
-分库分表SQL脚本生成工具 ( MySQL版本 )
+分库分表SQL脚本生成工具 ( MySQL 版本 )
 
 用法: $0 [选项]
 
@@ -43,15 +42,14 @@ show_help() {
   -i, --input-file FILE     输入 SQL 文件路径
   -o, --output-dir DIR      输出目录 ( 默认: ./sharding )
   --all                     处理所有 ./*.sql 文件
-  --gen-db                  生成数据库初始化脚本
   -h, --help                显示帮助信息
 
 示例:
   # 生成数据库初始化脚本
-  $0 -p hermet --gen-db
+  $0 -p hermet --all
 
   # 生成数据库 + 处理所有表文件
-  $0 -p hermet --gen-db --all -d 2 -t 4
+  $0 -p hermet --all -d 2 -t 4
 EOF
 }
 
@@ -147,7 +145,7 @@ generate_db_init_scripts() {
 
         {
             echo "-- ============================================"
-            echo "-- 分库分表SQL脚本 - 数据库初始化 ( MySQL版本 )"
+            echo "-- 分库分表SQL脚本 - 数据库初始化 ( MySQL 版本 )"
             echo "-- 数据库: $db_name"
             echo "-- 生成时间: $(date '+%Y-%m-%d %H:%M:%S')"
             echo "-- ============================================"
@@ -243,16 +241,6 @@ generate_sharding_sql() {
                 if [[ -n "$index_section" ]]; then
                     echo "-- 创建索引"
                     echo "$index_section"
-                    echo ""
-                fi
-
-                # 提取 INSERT 语句 ( 如果有 )。
-                local insert_section
-                insert_section=$(echo "$content" | sed -n "/INSERT INTO ${table_name}/,/;/p" | sed "s/\b${table_name}\b/${sharded_table_name}/g")
-
-                if [[ -n "$insert_section" ]]; then
-                    echo "-- 初始数据"
-                    echo "$insert_section"
                     echo ""
                 fi
 

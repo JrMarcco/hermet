@@ -26,7 +26,7 @@ COMMENT ON COLUMN biz_user.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 CREATE INDEX idx_biz_user_email ON biz_user(email);
 CREATE INDEX idx_biz_user_mobile ON biz_user(mobile);
 
--- 插入初始用户数据
+插入初始用户数据
 INSERT INTO biz_user (
     id,
     email,
