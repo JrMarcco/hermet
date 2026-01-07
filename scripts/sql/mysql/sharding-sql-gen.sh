@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 分库分表SQL脚本生成工具 ( PostgreSQL版本 )
+# 分库分表SQL脚本生成工具 ( MySQL版本 )
 # 用法: ./sharding-sql-gen.sh [选项]
 #
 # 选项:
@@ -32,7 +32,7 @@ NC='\033[0m' # No Color
 # 显示帮助信息
 show_help() {
     cat << EOF
-分库分表SQL脚本生成工具 ( PostgreSQL版本 )
+分库分表SQL脚本生成工具 ( MySQL版本 )
 
 用法: $0 [选项]
 
@@ -147,13 +147,13 @@ generate_db_init_scripts() {
 
         {
             echo "-- ============================================"
-            echo "-- 分库分表SQL脚本 - 数据库初始化 ( PostgreSQL版本 )"
+            echo "-- 分库分表SQL脚本 - 数据库初始化 ( MySQL版本 )"
             echo "-- 数据库: $db_name"
             echo "-- 生成时间: $(date '+%Y-%m-%d %H:%M:%S')"
             echo "-- ============================================"
             echo ""
             echo "-- 创建分片数据库"
-            echo "CREATE DATABASE $db_name WITH ENCODING 'UTF8';"
+            echo "CREATE DATABASE IF NOT EXISTS $db_name DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
             echo ""
         } > "$output_file"
 
@@ -166,15 +166,8 @@ generate_db_init_scripts() {
 # 提取 SQL 文件中的所有表名。
 extract_table_names() {
     local sql_file="$1"
-    grep -iE '^\s*(CREATE|DROP)\s+TABLE\s+(IF\s+EXISTS\s+)?[a-zA-Z_][a-zA-Z0-9_]*' "$sql_file" | \
-        sed -E 's/.*TABLE\s+(IF\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_]*).*/\2/' | sort -u
-}
-
-# 提取 SQL 文件中的所有 TYPE 名。
-extract_type_names() {
-    local sql_file="$1"
-    grep -iE '^\s*(CREATE|DROP)\s+TYPE\s+(IF\s+EXISTS\s+)?[a-zA-Z_][a-zA-Z0-9_]*' "$sql_file" | \
-        sed -E 's/.*TYPE\s+(IF\s+EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_]*).*/\2/' | sort -u
+    grep -iE '^\s*(CREATE|DROP)\s+TABLE\s+(IF\s+(NOT\s+)?EXISTS\s+)?[a-zA-Z_][a-zA-Z0-9_]*' "$sql_file" | \
+        sed -E 's/.*TABLE\s+(IF\s+(NOT\s+)?EXISTS\s+)?([a-zA-Z_][a-zA-Z0-9_]*).*/\3/' | sort -u
 }
 
 # 生成单个分库分表 SQL。
@@ -195,36 +188,16 @@ generate_sharding_sql() {
     local table_names
     table_names=$(extract_table_names "$input_file")
 
-    # 获取所有 TYPE 名。
-    local type_names
-    type_names=$(extract_type_names "$input_file")
-
     # 开始生成新的 SQL 文件。
     {
         echo "-- ============================================"
-        echo "-- 分库分表SQL脚本"
+        echo "-- 分库分表SQL脚本（MySQL版本）"
         echo "-- 数据库: $db_name"
         echo "-- 分表数量: $TABLE_COUNT"
         echo "-- 生成时间: $(date '+%Y-%m-%d %H:%M:%S')"
         echo "-- 原始文件: $input_file"
         echo "-- ============================================"
         echo ""
-
-        # 处理 TYPE 定义（ 只需要定义一次，所有分表共享 ）。
-        if [[ -n "$type_names" ]]; then
-            echo "-- ============================================"
-            echo "-- 枚举类型定义"
-            echo "-- ============================================"
-            echo ""
-
-            while IFS= read -r type_name; do
-                # 提取 TYPE 定义。
-                local type_def
-                type_def=$(echo "$content" | sed -n "/DROP TYPE.*${type_name}/,/;/p")
-                echo "$type_def"
-                echo ""
-            done <<< "$type_names"
-        fi
 
         # 为每个表生成分表。
         while IFS= read -r table_name; do
@@ -243,14 +216,14 @@ generate_sharding_sql() {
                 # 提取该表的完整定义（从 DROP 到对应的 );）。
                 local table_section
                 table_section=$(echo "$content" | awk -v table="$table_name" '
-                    /DROP TABLE.*IF EXISTS/ {
+                    /DROP TABLE.*IF.*EXISTS/ {
                         # 精确匹配表名: IF EXISTS table; 或 IF EXISTS table<空格>
-                        if ($0 ~ "IF EXISTS " table ";$" || $0 ~ "IF EXISTS " table "[[:space:]]") {
+                        if ($0 ~ "EXISTS " table ";$" || $0 ~ "EXISTS " table "[[:space:]]") {
                             found=1
                         }
                     }
                     found { print }
-                    found && /^\);$/ {
+                    found && /ENGINE=InnoDB/ {
                         found=0
                     }
                 ')
@@ -260,15 +233,6 @@ generate_sharding_sql() {
 
                 echo "$table_section"
                 echo ""
-
-                # 提取该表的 COMMENT 语句。
-                local comment_section
-                comment_section=$(echo "$content" | grep -E "COMMENT ON (TABLE|COLUMN) ${table_name}[.\s]" | sed "s/\b${table_name}\b/${sharded_table_name}/g")
-
-                if [[ -n "$comment_section" ]]; then
-                    echo "$comment_section"
-                    echo ""
-                fi
 
                 # 提取该表的索引创建语句。
                 local index_section
@@ -349,7 +313,7 @@ process_all_files() {
 # 主函数。
 main() {
     echo -e "${GREEN}======================================${NC}"
-    echo -e "${GREEN}分库分表SQL脚本生成工具${NC}"
+    echo -e "${GREEN}分库分表SQL脚本生成工具（MySQL版本）${NC}"
     echo -e "${GREEN}======================================${NC}"
     echo ""
 
