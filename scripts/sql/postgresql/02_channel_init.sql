@@ -130,4 +130,39 @@ COMMENT ON COLUMN user_channel.created_at IS '创建时间戳 ( Unix 毫秒值 )
 COMMENT ON COLUMN user_channel.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 创建索引
-CREATE INDEX idx_user_channel_user ON user_channel(user_id);
+CREATE INDEX idx_user_channel_user_channel ON user_channel(user_id, channel_id);
+
+
+
+-- 频道申请状态枚举
+DROP TYPE IF EXISTS channel_application_status_enum CASCADE;
+CREATE TYPE channel_application_status_enum AS ENUM ('pending', 'approved', 'rejected');
+
+--- 频道申请
+DROP TABLE IF EXISTS channel_application;
+CREATE TABLE channel_application (
+    id BIGINT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    channel_id BIGINT NOT NULL,
+    channel_name VARCHAR(128) NOT NULL DEFAULT '',
+    channel_avatar VARCHAR(256) NOT NULL DEFAULT '',
+    channel_type channel_type_enum NOT NULL,
+    application_status channel_application_status_enum NOT NULL,
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL
+);
+
+COMMENT ON TABLE channel_application IS '频道申请表';
+COMMENT ON COLUMN channel_application.id IS '主键 ID';
+COMMENT ON COLUMN channel_application.user_id IS '用户 ID';
+COMMENT ON COLUMN channel_application.channel_id IS '频道 ID';
+COMMENT ON COLUMN channel_application.channel_name IS '频道名称 ( 单聊为用户昵称 )';
+COMMENT ON COLUMN channel_application.channel_avatar IS '频道头像';
+COMMENT ON COLUMN channel_application.channel_type IS '频道类型 ( single=单聊, group=群聊 )';
+COMMENT ON COLUMN channel_application.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
+COMMENT ON COLUMN channel_application.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN channel_application.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+
+-- 创建索引
+CREATE INDEX idx_channel_application_user ON channel_application(user_id);
+CREATE INDEX idx_channel_application_channel ON channel_application(channel_id);
