@@ -2,7 +2,7 @@
 -- 分库分表SQL脚本
 -- 数据库: hermet_1
 -- 分表数量: 4
--- 生成时间: 2026-01-07 18:00:18
+-- 生成时间: 2026-01-07 18:09:23
 -- 原始文件: ./02_channel_init.sql
 -- ============================================
 
@@ -280,8 +280,7 @@ CREATE TABLE channel_member_0 (
     priority_order INT NOT NULL DEFAULT 0,
     mute BOOLEAN NOT NULL DEFAULT FALSE,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user UNIQUE (channel_id, user_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_member_0.id IS '主键 ID';
@@ -314,8 +313,7 @@ CREATE TABLE channel_member_1 (
     priority_order INT NOT NULL DEFAULT 0,
     mute BOOLEAN NOT NULL DEFAULT FALSE,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user UNIQUE (channel_id, user_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_member_1.id IS '主键 ID';
@@ -348,8 +346,7 @@ CREATE TABLE channel_member_2 (
     priority_order INT NOT NULL DEFAULT 0,
     mute BOOLEAN NOT NULL DEFAULT FALSE,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user UNIQUE (channel_id, user_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_member_2.id IS '主键 ID';
@@ -382,8 +379,7 @@ CREATE TABLE channel_member_3 (
     priority_order INT NOT NULL DEFAULT 0,
     mute BOOLEAN NOT NULL DEFAULT FALSE,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user UNIQUE (channel_id, user_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_member_3.id IS '主键 ID';
@@ -413,8 +409,7 @@ CREATE TABLE channel_read_record_0 (
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     last_message_id BIGINT NOT NULL DEFAULT 0,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user_read UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_read_record_0.id IS '主键 ID';
@@ -434,8 +429,7 @@ CREATE TABLE channel_read_record_1 (
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     last_message_id BIGINT NOT NULL DEFAULT 0,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user_read UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_read_record_1.id IS '主键 ID';
@@ -455,8 +449,7 @@ CREATE TABLE channel_read_record_2 (
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     last_message_id BIGINT NOT NULL DEFAULT 0,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user_read UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_read_record_2.id IS '主键 ID';
@@ -476,8 +469,7 @@ CREATE TABLE channel_read_record_3 (
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     last_message_id BIGINT NOT NULL DEFAULT 0,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user_read UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN channel_read_record_3.id IS '主键 ID';
@@ -507,8 +499,7 @@ CREATE TABLE user_channel_0 (
     channel_join_at BIGINT NOT NULL,
     channel_leave_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN user_channel_0.id IS '主键 ID';
@@ -540,8 +531,7 @@ CREATE TABLE user_channel_1 (
     channel_join_at BIGINT NOT NULL,
     channel_leave_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN user_channel_1.id IS '主键 ID';
@@ -573,8 +563,7 @@ CREATE TABLE user_channel_2 (
     channel_join_at BIGINT NOT NULL,
     channel_leave_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN user_channel_2.id IS '主键 ID';
@@ -606,8 +595,7 @@ CREATE TABLE user_channel_3 (
     channel_join_at BIGINT NOT NULL,
     channel_leave_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN user_channel_3.id IS '主键 ID';

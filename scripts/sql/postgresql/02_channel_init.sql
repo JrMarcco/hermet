@@ -52,8 +52,7 @@ CREATE TABLE channel_member (
     priority_order INT NOT NULL DEFAULT 0,
     mute BOOLEAN NOT NULL DEFAULT FALSE,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user UNIQUE (channel_id, user_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON TABLE channel_member IS '频道成员表';
@@ -83,8 +82,7 @@ CREATE TABLE channel_read_record (
     user_id BIGINT NOT NULL,
     channel_id BIGINT NOT NULL,
     last_message_id BIGINT NOT NULL DEFAULT 0,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_channel_user_read UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON TABLE channel_read_record IS '频道消息已读记录表';
@@ -112,8 +110,7 @@ CREATE TABLE user_channel (
     channel_join_at BIGINT NOT NULL,
     channel_leave_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON TABLE user_channel IS '用户频道表';

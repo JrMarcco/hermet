@@ -2,7 +2,7 @@
 -- 分库分表SQL脚本
 -- 数据库: hermet_1
 -- 分表数量: 4
--- 生成时间: 2026-01-07 18:00:18
+-- 生成时间: 2026-01-07 18:09:23
 -- 原始文件: ./01_user_init.sql
 -- ============================================
 
@@ -20,8 +20,7 @@ CREATE TABLE biz_user_0 (
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_mobile UNIQUE (mobile)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN biz_user_0.id IS 'id';
@@ -48,8 +47,7 @@ CREATE TABLE biz_user_1 (
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_mobile UNIQUE (mobile)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN biz_user_1.id IS 'id';
@@ -76,8 +74,7 @@ CREATE TABLE biz_user_2 (
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_mobile UNIQUE (mobile)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN biz_user_2.id IS 'id';
@@ -104,8 +101,7 @@ CREATE TABLE biz_user_3 (
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_mobile UNIQUE (mobile)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON COLUMN biz_user_3.id IS 'id';

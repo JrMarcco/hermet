@@ -8,8 +8,7 @@ CREATE TABLE biz_user (
     passwd VARCHAR(128) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL,
-    CONSTRAINT uk_mobile UNIQUE (mobile)
+    updated_at BIGINT NOT NULL
 );
 
 COMMENT ON TABLE biz_user IS '业务用户信息表';
