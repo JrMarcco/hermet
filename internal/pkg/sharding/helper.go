@@ -12,7 +12,8 @@ import (
 // 使用示例：
 //
 //	gen := snowflake.NewGenerator()
-//	strategy, _ := NewModuloSharding("db", "table", 8, 4)
+//	extractor := snowflake.NewExtractor()
+//	strategy, _ := sharding.NewModuloSharding(extractor, "db", "table", 8, 4)
 //	helper, _ := NewShardHelper(gen, strategy)
 //
 //	// 同时生成 ID 和获取分片信息
@@ -21,6 +22,9 @@ import (
 //
 //	// 根据已有 ID 获取分片信息
 //	dst = helper.DstFromId(id)
+//
+//	注意：
+//	idgen.Generator 和 ShardValExtractor 必须配套使用，否则会导致分片信息不一致。
 type ShardHelper struct {
 	gen      idgen.Generator // ID 生成器
 	strategy Strategy        // 分片策略
@@ -95,6 +99,14 @@ func (s *ShardHelper) Shard(sharder Sharder) (Dst, error) {
 // 适用于根据已有 ID 查询数据的场景。
 func (s *ShardHelper) DstFromID(id uint64) Dst {
 	return s.strategy.DstFromID(id)
+}
+
+func (s *ShardHelper) DstFromSharder(sharder Sharder) (Dst, error) {
+	shardVal, err := sharder.ShardVal()
+	if err != nil {
+		return Dst{}, err
+	}
+	return s.strategy.DstFromShardVal(shardVal), nil
 }
 
 // Broadcast 返回所有分片的目标列表。

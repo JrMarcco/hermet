@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jrmarcco/hermet/internal/pkg/xgorm"
+	"github.com/jrmarcco/jit/xsync"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -14,15 +15,20 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (*gorm.DB, error) {
-	type config struct {
-		DSN                       string        `mapstructure:"dsn"`
-		LogLevel                  string        `mapstructure:"log_level"`
-		SlowThreshold             time.Duration `mapstructure:"slow_threshold"`
-		IgnoreRecordNotFoundError bool          `mapstructure:"ignore_record_not_found_error"`
+func newDBShardingClients(zapLogger *zap.Logger, lc fx.Lifecycle) (*xsync.Map[string, *gorm.DB], error) {
+	type shardingConfig struct {
+		Name string `mapstructure:"name"`
+		DSN  string `mapstructure:"dsn"`
 	}
 
-	cfg := config{}
+	type dbConfig struct {
+		LogLevel                  string           `mapstructure:"log_level"`
+		SlowThreshold             time.Duration    `mapstructure:"slow_threshold"`
+		IgnoreRecordNotFoundError bool             `mapstructure:"ignore_record_not_found_error"`
+		Sharding                  []shardingConfig `mapstructure:"sharding"`
+	}
+
+	cfg := dbConfig{}
 	if err := viper.UnmarshalKey("db", &cfg); err != nil {
 		return nil, err
 	}
@@ -38,38 +44,57 @@ func newDBClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (*gorm.DB, error
 	case "info":
 		level = logger.Info
 	default:
-		panic("invalid log level")
+		return nil, fmt.Errorf("invalid log level: %s", cfg.LogLevel)
 	}
 
-	logger := xgorm.NewZapLogger(
-		zapLogger,
-		xgorm.WithLogLevel(level),
-		xgorm.WithSlowThreshold(cfg.SlowThreshold),
-		xgorm.WithIgnoreRecordNotFoundError(cfg.IgnoreRecordNotFoundError),
-	)
+	// 用于错误时清理。
+	openedDBs := make([]*gorm.DB, 0, len(cfg.Sharding))
 
-	db, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{
-		Logger: logger,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-
-	lifecycle.Append(fx.Hook{
-		OnStop: func(_ context.Context) error {
-			if err := sqlDB.Close(); err != nil {
-				zapLogger.Error("[hermet-ioc-db] failed to close db connection", zap.Error(err))
-				return fmt.Errorf("failed to close db connection: %w", err)
+	var dbs xsync.Map[string, *gorm.DB]
+	for _, s := range cfg.Sharding {
+		db, err := gorm.Open(postgres.Open(s.DSN), &gorm.Config{
+			Logger: xgorm.NewZapLogger(
+				zapLogger,
+				xgorm.WithLogLevel(level),
+				xgorm.WithSlowThreshold(cfg.SlowThreshold),
+				xgorm.WithIgnoreRecordNotFoundError(cfg.IgnoreRecordNotFoundError),
+			),
+		})
+		if err != nil {
+			// 清理已打开的连接
+			for _, openedDB := range openedDBs {
+				if sqlDB, _ := openedDB.DB(); sqlDB != nil {
+					_ = sqlDB.Close()
+				}
 			}
-			zapLogger.Info("[hermet-ioc-db] db connection closed")
-			return nil
-		},
-	})
+			return nil, fmt.Errorf("failed to open db [ %s ]: %w", s.Name, err)
+		}
 
-	return db, nil
+		sqlDB, err := db.DB()
+		if err != nil {
+			// 清理已打开的连接
+			for _, openedDB := range openedDBs {
+				if sqlDB, _ := openedDB.DB(); sqlDB != nil {
+					_ = sqlDB.Close()
+				}
+			}
+			return nil, fmt.Errorf("failed to get sql db [ %s ]: %w", s.Name, err)
+		}
+
+		openedDBs = append(openedDBs, db)
+		dbs.Store(s.Name, db)
+
+		// 注册关闭 Hook。
+		lc.Append(fx.Hook{
+			OnStop: func(_ context.Context) error {
+				if err := sqlDB.Close(); err != nil {
+					zapLogger.Error("[hermet-ioc-db] failed to close db connection", zap.Error(err))
+					return fmt.Errorf("failed to close db connection: %w", err)
+				}
+				zapLogger.Info("[hermet-ioc-db] db connection closed")
+				return nil
+			},
+		})
+	}
+	return &dbs, nil
 }

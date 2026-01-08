@@ -96,7 +96,10 @@ func (s *ModuloSharding) Shard(shardVal uint64) (Dst, error) {
 
 func (s *ModuloSharding) DstFromID(id uint64) Dst {
 	shardVal := s.extractor.ExtractShardVal(id)
+	return s.DstFromShardVal(shardVal)
+}
 
+func (s *ModuloSharding) DstFromShardVal(shardVal uint64) Dst {
 	totalShards := s.dbShardCount * s.tbShardCount
 	shardIndex := shardVal % totalShards
 

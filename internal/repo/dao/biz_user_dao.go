@@ -3,10 +3,11 @@ package dao
 import (
 	"context"
 	"database/sql"
-	"time"
+	"fmt"
 
+	"github.com/jrmarcco/hermet/internal/pkg/sharding"
+	"github.com/jrmarcco/jit/xsync"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type BizUser struct {
@@ -29,48 +30,35 @@ func (BizUser) TableName() string {
 //go:generate mockgen -source=biz_user_dao.go -destination=mock/biz_user_dao.mock.go -package=daomock -typed BizUserDao
 
 type BizUserDao interface {
-	Save(ctx context.Context, user BizUser) (BizUser, error)
-
 	FindByID(ctx context.Context, id uint64) (BizUser, error)
 	FindByEmail(ctx context.Context, email string) (BizUser, error)
-	FindByMobile(ctx context.Context, mobile string) (BizUser, error)
 }
 
 var _ BizUserDao = (*DefaultBizUserDao)(nil)
 
 type DefaultBizUserDao struct {
-	db *gorm.DB
+	dbs         *xsync.Map[string, *gorm.DB]
+	shardHelper *sharding.ShardHelper
 }
 
-func NewDefaultBizUserDao(db *gorm.DB) *DefaultBizUserDao {
-	return &DefaultBizUserDao{db: db}
-}
-
-func (d *DefaultBizUserDao) Save(ctx context.Context, user BizUser) (BizUser, error) {
-	now := time.Now().UnixMilli()
-	user.CreatedAt = now
-	user.UpdatedAt = now
-
-	res := d.db.WithContext(ctx).Model(&BizUser{}).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "id"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"email":       user.Email,
-			"avatar":      user.Avatar,
-			"passwd":      user.Passwd,
-			"nickname":    user.Nickname,
-			"profile_ver": gorm.Expr("profile_ver + 1"),
-			"updated_at":  now,
-		}),
-	}).Create(&user)
-	if res.Error != nil {
-		return BizUser{}, res.Error
+func NewDefaultBizUserDao(dbs *xsync.Map[string, *gorm.DB], shardHelper *sharding.ShardHelper) *DefaultBizUserDao {
+	return &DefaultBizUserDao{
+		dbs:         dbs,
+		shardHelper: shardHelper,
 	}
-	return user, nil
 }
 
 func (d *DefaultBizUserDao) FindByID(ctx context.Context, id uint64) (BizUser, error) {
 	var user BizUser
-	err := d.db.WithContext(ctx).Model(&BizUser{}).
+
+	dst := d.shardHelper.DstFromID(id)
+
+	db, ok := d.dbs.Load(dst.DB)
+	if !ok {
+		return BizUser{}, fmt.Errorf("failed to load database [ %s ]", dst.DB)
+	}
+
+	err := db.WithContext(ctx).Table(dst.TB).Model(&BizUser{}).
 		Where("id = ?", id).
 		First(&user).Error
 	return user, err
@@ -78,16 +66,19 @@ func (d *DefaultBizUserDao) FindByID(ctx context.Context, id uint64) (BizUser, e
 
 func (d *DefaultBizUserDao) FindByEmail(ctx context.Context, email string) (BizUser, error) {
 	var user BizUser
-	err := d.db.WithContext(ctx).Model(&BizUser{}).
-		Where("email = ?", email).
-		First(&user).Error
-	return user, err
-}
 
-func (d *DefaultBizUserDao) FindByMobile(ctx context.Context, mobile string) (BizUser, error) {
-	var user BizUser
-	err := d.db.WithContext(ctx).Model(&BizUser{}).
-		Where("mobile = ?", mobile).
+	dst, err := d.shardHelper.DstFromSharder(sharding.NewStringSharder(email))
+	if err != nil {
+		return BizUser{}, fmt.Errorf("failed to get shard destination from email [ %s ]", email)
+	}
+
+	db, ok := d.dbs.Load(dst.DB)
+	if !ok {
+		return BizUser{}, fmt.Errorf("failed to load database [ %s ]", dst.DB)
+	}
+
+	err = db.WithContext(ctx).Table(dst.TB).Model(&BizUser{}).
+		Where("email = ?", email).
 		First(&user).Error
 	return user, err
 }

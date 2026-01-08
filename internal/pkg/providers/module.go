@@ -9,10 +9,19 @@ import (
 var (
 	ZapLoggerFxModule  = fx.Module("zap-logger", fx.Provide(newZapLogger))
 	RedisFxModule      = fx.Module("redis", fx.Provide(newRedisCmdable))
-	DBFxModule         = fx.Module("db", fx.Provide(newDBClient))
 	MongoFxModule      = fx.Module("mongo", fx.Provide(newMongoClient))
 	KafkaFxModule      = fx.Module("kafka", fx.Provide(newKafkaClient))
 	JwtManagerFxModule = fx.Module("jwt-manager", fx.Provide(newJwtManager))
+)
+
+var DBFxModule = fx.Module(
+	"db",
+	fx.Provide(
+		fx.Annotate(
+			newDBShardingClients,
+			fx.ResultTags(`name:"db_sharding_clients"`),
+		),
+	),
 )
 
 var JwtHandlerFxModule = fx.Module(
@@ -36,6 +45,17 @@ var MiddlewareFxModule = fx.Module(
 			newJwtBuilder,
 			fx.As(new(xgin.HandlerFuncBuilder)),
 			fx.ResultTags(`group:"api_middleware"`),
+		),
+	),
+)
+
+var ShardingFxModule = fx.Module(
+	"sharding",
+	fx.Provide(
+		newIDGen,
+		fx.Annotate(
+			newBizUserShardHelper,
+			fx.ResultTags(`name:"biz_user_shard_helper"`),
 		),
 	),
 )

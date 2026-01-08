@@ -8,6 +8,7 @@ var DaoFxModule = fx.Module(
 		fx.Annotate(
 			NewDefaultBizUserDao,
 			fx.As(new(BizUserDao)),
+			fx.ParamTags(`name:"db_sharding_clients"`, `name:"biz_user_shard_helper"`),
 		),
 		fx.Annotate(
 			NewMongoMessageDao,

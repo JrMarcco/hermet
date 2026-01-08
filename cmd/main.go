@@ -49,6 +49,9 @@ func main() {
 		// 初始化 middleware。
 		providers.MiddlewareFxModule,
 
+		// 初始化 sharding。
+		providers.ShardingFxModule,
+
 		// 初始化 dao。
 		dao.DaoFxModule,
 
@@ -76,7 +79,7 @@ func loadConfig() error {
 		return fmt.Errorf("failed to read base config: %w", err)
 	}
 
-	subConfigNames := []string{"redis", "db", "mongodb", "kafka"}
+	subConfigNames := []string{"redis", "db", "mongodb", "kafka", "sharding"}
 	for _, subConfigName := range subConfigNames {
 		viper.SetConfigName(subConfigName)
 		if err := viper.MergeInConfig(); err != nil {

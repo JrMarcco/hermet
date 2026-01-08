@@ -73,6 +73,10 @@ func (s *BalancedSharding) DstFromID(id uint64) Dst {
 	return s.base.DstFromID(id)
 }
 
+func (s *BalancedSharding) DstFromShardVal(shardVal uint64) Dst {
+	return s.base.DstFromShardVal(shardVal)
+}
+
 func (s *BalancedSharding) Broadcast() []Dst {
 	dsts := s.base.Broadcast()
 

@@ -1,0 +1,6 @@
+sharding:
+  biz_user:
+    db_prefix: "hermet"
+    tb_prefix: "biz_user"
+    db_shard_count: 2
+    tb_shard_count: 4

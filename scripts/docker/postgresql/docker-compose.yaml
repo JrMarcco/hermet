@@ -1,0 +1,49 @@
+x-postgresql-common: &postgresql-common
+  image: postgres:alpine3.23
+  restart: unless-stopped
+  networks:
+    - jrmarcco_net
+
+networks:
+  jrmarcco_net:
+    external: true
+
+services:
+  postgresql-base:
+    <<: *postgresql-common
+    container_name: postgresql-base
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
+    volumes:
+      - ./base-data:/var/lib/postgresql/data
+    networks:
+      - jrmarcco_net
+
+  postgresql-hermet-0:
+    <<: *postgresql-common
+    container_name: postgresql-hermet-0
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
+    volumes:
+      - ./hermet-0-data:/var/lib/postgresql/data
+    networks:
+      - jrmarcco_net
+
+  postgresql-hermet-1:
+    <<: *postgresql-common
+    container_name: postgresql-hermet-1
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
+    volumes:
+      - ./hermet-1-data:/var/lib/postgresql/data
+    networks:
+      - jrmarcco_net

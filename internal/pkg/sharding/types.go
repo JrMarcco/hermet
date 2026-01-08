@@ -30,6 +30,11 @@ type Strategy interface {
 	// 返回: 目标数据库和表的信息。
 	DstFromID(id uint64) Dst
 
+	// DstFromShardVal 根据分片值计算分库分表目标。
+	// shardVal: 分片值。
+	// 返回: 目标数据库和表的信息。
+	DstFromShardVal(shardVal uint64) Dst
+
 	// Broadcast 返回所有分库分表的目标列表 ( 用于广播查询 )。
 	// 适用场景：需要在所有分片上执行查询的操作 ( 如全量扫描、统计等 )。
 	// 注意: 返回的切片顺序可能因策略而异 ( 如使用 BalancedSharding 时 )。
