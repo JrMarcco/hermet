@@ -9,39 +9,39 @@ networks:
     external: true
 
 services:
-  postgresql-base:
+  pgsql-jrmarcco:
     <<: *postgresql-common
-    container_name: postgresql-base
+    container_name: pgsql-jrmarcco
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
     volumes:
-      - ./base-data:/var/lib/postgresql/data
+      - ./jrmarcco-data:/var/lib/postgresql/data
     networks:
       - jrmarcco_net
 
-  postgresql-hermet-0:
+  pgsql-hermet-0:
     <<: *postgresql-common
-    container_name: postgresql-hermet-0
+    container_name: pgsql-hermet-0
     ports:
       - "15432:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
+      POSTGRES_USER: ${POSTGRES_USER:-hermet_0}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
     volumes:
       - ./hermet-0-data:/var/lib/postgresql/data
     networks:
       - jrmarcco_net
 
-  postgresql-hermet-1:
+  pgsql-hermet-1:
     <<: *postgresql-common
-    container_name: postgresql-hermet-1
+    container_name: pgsql-hermet-1
     ports:
       - "25432:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
+      POSTGRES_USER: ${POSTGRES_USER:-hermet_1}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
     volumes:
       - ./hermet-1-data:/var/lib/postgresql/data
