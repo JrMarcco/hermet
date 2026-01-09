@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"github.com/jrmarcco/hermet/internal/api/jwt"
 	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin/xsession"
 	"go.uber.org/fx"
 )
 
@@ -27,8 +27,8 @@ var DBFxModule = fx.Module(
 var JwtHandlerFxModule = fx.Module(
 	"jwt-handler", fx.Provide(
 		fx.Annotate(
-			newRedisJwtHandler,
-			fx.As(new(jwt.Handler)),
+			newRedisSessionHandler,
+			fx.As(new(xsession.Handler)),
 		),
 	),
 )

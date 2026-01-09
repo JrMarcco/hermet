@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	webjwt "github.com/jrmarcco/hermet/internal/api/jwt"
 	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin/xsession"
 	"github.com/jrmarcco/jit/xjwt"
 	"github.com/jrmarcco/jit/xset"
 	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
@@ -14,13 +15,13 @@ import (
 var _ xgin.HandlerFuncBuilder = (*JwtBuilder)(nil)
 
 type JwtBuilder struct {
-	handler   webjwt.Handler
+	handler   xsession.Handler
 	atManager xjwt.Manager[authv1.JwtPayload]
 	ignores   xset.Set[string]
 }
 
 func NewJwtBuilder(
-	handler webjwt.Handler,
+	handler xsession.Handler,
 	atManager xjwt.Manager[authv1.JwtPayload],
 	ignores xset.Set[string],
 ) *JwtBuilder {
@@ -38,7 +39,7 @@ func (b *JwtBuilder) Build() gin.HandlerFunc {
 			return
 		}
 
-		token := b.handler.ExtractAccessToken(ctx)
+		token := strings.TrimPrefix(ctx.GetHeader(xgin.HeaderNameAccessToken), "Bearer ")
 		if token == "" {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return

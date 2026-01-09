@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jrmarcco/hermet/internal/api/jwt"
 	"github.com/jrmarcco/hermet/internal/pkg/xgin"
 	"github.com/jrmarcco/hermet/internal/pkg/xgin/middleware"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin/xsession"
 	"github.com/jrmarcco/jit/xjwt"
 	"github.com/jrmarcco/jit/xset"
 	authv1 "github.com/jrmarcco/synp-api/api/go/auth/v1"
@@ -49,7 +49,7 @@ func newCorsBuilder() (*middleware.CorsBuilder, error) {
 type jwtBuilderFxParams struct {
 	fx.In
 
-	Handler   jwt.Handler
+	Handler   xsession.Handler
 	AtManager xjwt.Manager[authv1.JwtPayload] `name:"access-token-manager"`
 }
 

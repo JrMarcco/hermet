@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	webjwt "github.com/jrmarcco/hermet/internal/api/jwt"
 	"github.com/jrmarcco/hermet/internal/errs"
 	"github.com/jrmarcco/hermet/internal/pkg/xgin"
+	"github.com/jrmarcco/hermet/internal/pkg/xgin/xsession"
 	"github.com/jrmarcco/hermet/internal/service"
 	"go.uber.org/zap"
 )
@@ -17,13 +17,13 @@ import (
 var _ xgin.RouteRegistry = (*AuthHandler)(nil)
 
 type AuthHandler struct {
-	webjwt.Handler
+	xsession.Handler
 
 	svc    service.AuthService
 	logger *zap.Logger
 }
 
-func NewAuthHandler(handler webjwt.Handler, svc service.AuthService, logger *zap.Logger) *AuthHandler {
+func NewAuthHandler(handler xsession.Handler, svc service.AuthService, logger *zap.Logger) *AuthHandler {
 	return &AuthHandler{
 		Handler: handler,
 		svc:     svc,
