@@ -15,24 +15,28 @@ import (
 type UserService interface {
 	AddUser(ctx context.Context, user domain.BizUser) error
 
-	AddContact(ctx context.Context, applicantID, targetID uint64, message string) error
+	AddContact(ctx context.Context, event domain.ContactApplicantEvent) error
+	ListContactApplications(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error)
 }
 
 var _ UserService = (*DefaultUserService)(nil)
 
 type DefaultUserService struct {
 	bizUserRepo            repo.BizUserRepo
+	userContactRepo        repo.UserContactRepo
 	contactApplicationRepo repo.ContactApplicationRepo
 	channelApplicationRepo repo.ChannelApplicationRepo
 }
 
 func NewDefaultUserService(
 	bizUserRepo repo.BizUserRepo,
+	userContactRepo repo.UserContactRepo,
 	contactApplicationRepo repo.ContactApplicationRepo,
 	channelApplicationRepo repo.ChannelApplicationRepo,
 ) *DefaultUserService {
 	return &DefaultUserService{
 		bizUserRepo:            bizUserRepo,
+		userContactRepo:        userContactRepo,
 		contactApplicationRepo: contactApplicationRepo,
 		channelApplicationRepo: channelApplicationRepo,
 	}
@@ -65,9 +69,20 @@ func (s *DefaultUserService) AddUser(ctx context.Context, user domain.BizUser) e
 	return nil
 }
 
-func (s *DefaultUserService) AddContact(ctx context.Context, applicantID, targetID uint64, message string) error {
-	// 查询用户信息。
-	bizUser, err := s.bizUserRepo.FindByID(ctx, targetID)
+func (s *DefaultUserService) AddContact(ctx context.Context, event domain.ContactApplicantEvent) error {
+	// 判断是否已经存在联系人。
+	uc, err := s.userContactRepo.FindByUserIDAndContactID(ctx, event.ApplicantID, event.TargetID)
+	if err != nil && !errors.Is(err, errs.ErrRecordNotFound) {
+		return err
+	}
+
+	// 已经存在联系人。
+	if uc.ID != 0 {
+		return fmt.Errorf("%w: contact already exists", errs.ErrInvalidParam)
+	}
+
+	// 查询申请人信息。
+	bizUser, err := s.bizUserRepo.FindByID(ctx, event.ApplicantID)
 	if err != nil {
 		if errors.Is(err, errs.ErrRecordNotFound) {
 			return errors.New("target user is not exists")
@@ -77,12 +92,13 @@ func (s *DefaultUserService) AddContact(ctx context.Context, applicantID, target
 
 	// 提交申请
 	ca := domain.ContactApplication{
-		ApplicantID:        applicantID,
-		TargetID:           targetID,
-		TargetName:         bizUser.Nickname,
-		TargetAvatar:       bizUser.Avatar,
+		ApplicantID:        event.ApplicantID,
+		TargetID:           event.TargetID,
+		ApplicantName:      bizUser.Nickname,
+		ApplicantAvatar:    bizUser.Avatar,
 		ApplicationStatus:  domain.ApplicationStatusPending,
-		ApplicationMessage: message,
+		ApplicationMessage: event.Message,
+		Source:             event.Source,
 	}
 
 	_, err = s.contactApplicationRepo.Save(ctx, ca)
@@ -94,4 +110,8 @@ func (s *DefaultUserService) AddContact(ctx context.Context, applicantID, target
 	// 向 target 用户发送申请通知。
 
 	return nil
+}
+
+func (s *DefaultUserService) ListContactApplications(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error) {
+	return s.contactApplicationRepo.ListPendingByTargetID(ctx, targetID)
 }

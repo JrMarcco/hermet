@@ -2,7 +2,7 @@
 -- 分库分表SQL脚本
 -- 数据库: hermet_0
 -- 分表数量: 4
--- 生成时间: 2026-01-09 16:40:52
+-- 生成时间: 2026-01-09 19:22:17
 -- 原始文件: ./03_channel_init.sql
 -- ============================================
 
@@ -22,8 +22,8 @@ CREATE TYPE channel_status_enum AS ENUM ('creating', 'active', 'failed','archive
 DROP TYPE IF EXISTS channel_type_enum CASCADE;
 CREATE TYPE channel_type_enum AS ENUM ('single', 'group');
 
-DROP TYPE IF EXISTS friendship_source_enum CASCADE;
-CREATE TYPE friendship_source_enum AS ENUM ('search', 'qrcode', 'group');
+DROP TYPE IF EXISTS contact_source_enum CASCADE;
+CREATE TYPE contact_source_enum AS ENUM ('search', 'qrcode', 'group');
 
 -- ============================================
 -- 表: channel (分表数: 4)
@@ -650,12 +650,15 @@ DROP TABLE IF EXISTS contact_application_0;
 CREATE TABLE contact_application_0 (
     id BIGINT PRIMARY KEY,
 
-    applicant_id BIGINT NOT NULL,
-
-    -- 目标用户信息。
     target_id BIGINT NOT NULL,
-    target_name VARCHAR(128) NOT NULL DEFAULT '',
-    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 申请用户信息。
+    applicant_id BIGINT NOT NULL,
+    applicant_name VARCHAR(128) NOT NULL DEFAULT '',
+    applicant_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
     application_status application_status_enum NOT NULL,
     application_message VARCHAR(256) NOT NULL DEFAULT '',
@@ -668,10 +671,11 @@ CREATE TABLE contact_application_0 (
 
 COMMENT ON TABLE contact_application_0 IS '联系人申请表 ( 加好友申请 )';
 COMMENT ON COLUMN contact_application_0.id IS '主键 ID';
-COMMENT ON COLUMN contact_application_0.applicant_id IS '申请人 ID';
 COMMENT ON COLUMN contact_application_0.target_id IS '目标用户 ID';
-COMMENT ON COLUMN contact_application_0.target_name IS '目标用户昵称';
-COMMENT ON COLUMN contact_application_0.target_avatar IS '目标用户头像';
+COMMENT ON COLUMN contact_application_0.applicant_id IS '申请人 ID';
+COMMENT ON COLUMN contact_application_0.applicant_name IS '申请人昵称';
+COMMENT ON COLUMN contact_application_0.applicant_avatar IS '申请人头像';
+COMMENT ON COLUMN contact_application_0.source IS '添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )';
 COMMENT ON COLUMN contact_application_0.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
 COMMENT ON COLUMN contact_application_0.application_message IS '申请验证消息';
 COMMENT ON COLUMN contact_application_0.reviewed_at IS '审批时间戳 ( Unix 毫秒值 )';
@@ -688,12 +692,15 @@ DROP TABLE IF EXISTS contact_application_1;
 CREATE TABLE contact_application_1 (
     id BIGINT PRIMARY KEY,
 
-    applicant_id BIGINT NOT NULL,
-
-    -- 目标用户信息。
     target_id BIGINT NOT NULL,
-    target_name VARCHAR(128) NOT NULL DEFAULT '',
-    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 申请用户信息。
+    applicant_id BIGINT NOT NULL,
+    applicant_name VARCHAR(128) NOT NULL DEFAULT '',
+    applicant_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
     application_status application_status_enum NOT NULL,
     application_message VARCHAR(256) NOT NULL DEFAULT '',
@@ -706,10 +713,11 @@ CREATE TABLE contact_application_1 (
 
 COMMENT ON TABLE contact_application_1 IS '联系人申请表 ( 加好友申请 )';
 COMMENT ON COLUMN contact_application_1.id IS '主键 ID';
-COMMENT ON COLUMN contact_application_1.applicant_id IS '申请人 ID';
 COMMENT ON COLUMN contact_application_1.target_id IS '目标用户 ID';
-COMMENT ON COLUMN contact_application_1.target_name IS '目标用户昵称';
-COMMENT ON COLUMN contact_application_1.target_avatar IS '目标用户头像';
+COMMENT ON COLUMN contact_application_1.applicant_id IS '申请人 ID';
+COMMENT ON COLUMN contact_application_1.applicant_name IS '申请人昵称';
+COMMENT ON COLUMN contact_application_1.applicant_avatar IS '申请人头像';
+COMMENT ON COLUMN contact_application_1.source IS '添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )';
 COMMENT ON COLUMN contact_application_1.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
 COMMENT ON COLUMN contact_application_1.application_message IS '申请验证消息';
 COMMENT ON COLUMN contact_application_1.reviewed_at IS '审批时间戳 ( Unix 毫秒值 )';
@@ -726,12 +734,15 @@ DROP TABLE IF EXISTS contact_application_2;
 CREATE TABLE contact_application_2 (
     id BIGINT PRIMARY KEY,
 
-    applicant_id BIGINT NOT NULL,
-
-    -- 目标用户信息。
     target_id BIGINT NOT NULL,
-    target_name VARCHAR(128) NOT NULL DEFAULT '',
-    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 申请用户信息。
+    applicant_id BIGINT NOT NULL,
+    applicant_name VARCHAR(128) NOT NULL DEFAULT '',
+    applicant_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
     application_status application_status_enum NOT NULL,
     application_message VARCHAR(256) NOT NULL DEFAULT '',
@@ -744,10 +755,11 @@ CREATE TABLE contact_application_2 (
 
 COMMENT ON TABLE contact_application_2 IS '联系人申请表 ( 加好友申请 )';
 COMMENT ON COLUMN contact_application_2.id IS '主键 ID';
-COMMENT ON COLUMN contact_application_2.applicant_id IS '申请人 ID';
 COMMENT ON COLUMN contact_application_2.target_id IS '目标用户 ID';
-COMMENT ON COLUMN contact_application_2.target_name IS '目标用户昵称';
-COMMENT ON COLUMN contact_application_2.target_avatar IS '目标用户头像';
+COMMENT ON COLUMN contact_application_2.applicant_id IS '申请人 ID';
+COMMENT ON COLUMN contact_application_2.applicant_name IS '申请人昵称';
+COMMENT ON COLUMN contact_application_2.applicant_avatar IS '申请人头像';
+COMMENT ON COLUMN contact_application_2.source IS '添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )';
 COMMENT ON COLUMN contact_application_2.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
 COMMENT ON COLUMN contact_application_2.application_message IS '申请验证消息';
 COMMENT ON COLUMN contact_application_2.reviewed_at IS '审批时间戳 ( Unix 毫秒值 )';
@@ -764,12 +776,15 @@ DROP TABLE IF EXISTS contact_application_3;
 CREATE TABLE contact_application_3 (
     id BIGINT PRIMARY KEY,
 
-    applicant_id BIGINT NOT NULL,
-
-    -- 目标用户信息。
     target_id BIGINT NOT NULL,
-    target_name VARCHAR(128) NOT NULL DEFAULT '',
-    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 申请用户信息。
+    applicant_id BIGINT NOT NULL,
+    applicant_name VARCHAR(128) NOT NULL DEFAULT '',
+    applicant_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
     application_status application_status_enum NOT NULL,
     application_message VARCHAR(256) NOT NULL DEFAULT '',
@@ -782,10 +797,11 @@ CREATE TABLE contact_application_3 (
 
 COMMENT ON TABLE contact_application_3 IS '联系人申请表 ( 加好友申请 )';
 COMMENT ON COLUMN contact_application_3.id IS '主键 ID';
-COMMENT ON COLUMN contact_application_3.applicant_id IS '申请人 ID';
 COMMENT ON COLUMN contact_application_3.target_id IS '目标用户 ID';
-COMMENT ON COLUMN contact_application_3.target_name IS '目标用户昵称';
-COMMENT ON COLUMN contact_application_3.target_avatar IS '目标用户头像';
+COMMENT ON COLUMN contact_application_3.applicant_id IS '申请人 ID';
+COMMENT ON COLUMN contact_application_3.applicant_name IS '申请人昵称';
+COMMENT ON COLUMN contact_application_3.applicant_avatar IS '申请人头像';
+COMMENT ON COLUMN contact_application_3.source IS '添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )';
 COMMENT ON COLUMN contact_application_3.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
 COMMENT ON COLUMN contact_application_3.application_message IS '申请验证消息';
 COMMENT ON COLUMN contact_application_3.reviewed_at IS '审批时间戳 ( Unix 毫秒值 )';
@@ -966,30 +982,31 @@ COMMENT ON COLUMN conversation_reverse_index_3.created_at IS '创建时间戳 ( 
 CREATE INDEX idx_cri_peer_3 ON conversation_reverse_index_3(peer_user_id);
 
 -- ============================================
--- 表: friendship (分表数: 4)
+-- 表: user_contact (分表数: 4)
 -- ============================================
 
--- 分表 0: friendship_0
-DROP TABLE IF EXISTS friendship_0;
-CREATE TABLE friendship_0 (
+-- 分表 0: user_contact_0
+DROP TABLE IF EXISTS user_contact_0;
+CREATE TABLE user_contact_0 (
     id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
 
-    -- 好友备注名
+    user_id BIGINT NOT NULL,
+    contact_id BIGINT NOT NULL,
+
+    -- 联系人备注名
     remark_name VARCHAR(64) NOT NULL DEFAULT '',
 
     -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
-    source friendship_source_enum NOT NULL DEFAULT 'search',
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
-    -- 好友标签
+    -- 联系人标签
     tags VARCHAR(128)[] DEFAULT '{}',
 
-    -- 好友分组
+    -- 联系人分组
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',
 
     -- 状态标记
-    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标好友
+    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,  -- 黑名单
 
     added_at BIGINT NOT NULL,
@@ -999,52 +1016,53 @@ CREATE TABLE friendship_0 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_friendship_0 UNIQUE(user_id, friend_id)
+    CONSTRAINT uk_user_contact_0 UNIQUE(user_id, contact_id)
 );
 
-COMMENT ON TABLE friendship_0 IS '【 写入侧 】好友关系表';
-COMMENT ON COLUMN friendship_0.id IS '主键 ID';
-COMMENT ON COLUMN friendship_0.user_id IS '用户 ID';
-COMMENT ON COLUMN friendship_0.friend_id IS '好友 ID';
-COMMENT ON COLUMN friendship_0.remark_name IS '好友备注名';
-COMMENT ON COLUMN friendship_0.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
-COMMENT ON COLUMN friendship_0.tags IS '好友标签数组';
-COMMENT ON COLUMN friendship_0.group_name IS '好友分组';
-COMMENT ON COLUMN friendship_0.is_starred IS '是否星标好友';
-COMMENT ON COLUMN friendship_0.is_blocked IS '是否拉黑';
-COMMENT ON COLUMN friendship_0.added_at IS '添加时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_0.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_0.created_at IS '创建时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_0.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+COMMENT ON TABLE user_contact_0 IS '【 写入侧 】用户联系人表';
+COMMENT ON COLUMN user_contact_0.id IS '主键 ID';
+COMMENT ON COLUMN user_contact_0.user_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_0.contact_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_0.remark_name IS '联系人备注名';
+COMMENT ON COLUMN user_contact_0.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
+COMMENT ON COLUMN user_contact_0.tags IS '联系人标签数组';
+COMMENT ON COLUMN user_contact_0.group_name IS '联系人分组';
+COMMENT ON COLUMN user_contact_0.is_starred IS '是否星标联系人';
+COMMENT ON COLUMN user_contact_0.is_blocked IS '是否黑名单联系人';
+COMMENT ON COLUMN user_contact_0.added_at IS '添加时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_0.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_0.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_0.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 创建索引
-CREATE INDEX idx_friendship_user_0 ON friendship_0(user_id);
+CREATE INDEX idx_user_contact_user_0 ON user_contact_0(user_id);
 
-CREATE INDEX idx_friendship_user_active_0 ON friendship_0(user_id, deleted_at) WHERE deleted_at = 0;
+CREATE INDEX idx_user_contact_user_active_0 ON user_contact_0(user_id, deleted_at) WHERE deleted_at = 0;
 
-CREATE INDEX idx_friendship_user_starred_0 ON friendship_0(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
+CREATE INDEX idx_user_contact_user_starred_0 ON user_contact_0(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
 
--- 分表 1: friendship_1
-DROP TABLE IF EXISTS friendship_1;
-CREATE TABLE friendship_1 (
+-- 分表 1: user_contact_1
+DROP TABLE IF EXISTS user_contact_1;
+CREATE TABLE user_contact_1 (
     id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
 
-    -- 好友备注名
+    user_id BIGINT NOT NULL,
+    contact_id BIGINT NOT NULL,
+
+    -- 联系人备注名
     remark_name VARCHAR(64) NOT NULL DEFAULT '',
 
     -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
-    source friendship_source_enum NOT NULL DEFAULT 'search',
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
-    -- 好友标签
+    -- 联系人标签
     tags VARCHAR(128)[] DEFAULT '{}',
 
-    -- 好友分组
+    -- 联系人分组
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',
 
     -- 状态标记
-    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标好友
+    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,  -- 黑名单
 
     added_at BIGINT NOT NULL,
@@ -1054,52 +1072,53 @@ CREATE TABLE friendship_1 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_friendship_1 UNIQUE(user_id, friend_id)
+    CONSTRAINT uk_user_contact_1 UNIQUE(user_id, contact_id)
 );
 
-COMMENT ON TABLE friendship_1 IS '【 写入侧 】好友关系表';
-COMMENT ON COLUMN friendship_1.id IS '主键 ID';
-COMMENT ON COLUMN friendship_1.user_id IS '用户 ID';
-COMMENT ON COLUMN friendship_1.friend_id IS '好友 ID';
-COMMENT ON COLUMN friendship_1.remark_name IS '好友备注名';
-COMMENT ON COLUMN friendship_1.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
-COMMENT ON COLUMN friendship_1.tags IS '好友标签数组';
-COMMENT ON COLUMN friendship_1.group_name IS '好友分组';
-COMMENT ON COLUMN friendship_1.is_starred IS '是否星标好友';
-COMMENT ON COLUMN friendship_1.is_blocked IS '是否拉黑';
-COMMENT ON COLUMN friendship_1.added_at IS '添加时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_1.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_1.created_at IS '创建时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_1.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+COMMENT ON TABLE user_contact_1 IS '【 写入侧 】用户联系人表';
+COMMENT ON COLUMN user_contact_1.id IS '主键 ID';
+COMMENT ON COLUMN user_contact_1.user_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_1.contact_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_1.remark_name IS '联系人备注名';
+COMMENT ON COLUMN user_contact_1.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
+COMMENT ON COLUMN user_contact_1.tags IS '联系人标签数组';
+COMMENT ON COLUMN user_contact_1.group_name IS '联系人分组';
+COMMENT ON COLUMN user_contact_1.is_starred IS '是否星标联系人';
+COMMENT ON COLUMN user_contact_1.is_blocked IS '是否黑名单联系人';
+COMMENT ON COLUMN user_contact_1.added_at IS '添加时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_1.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_1.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_1.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 创建索引
-CREATE INDEX idx_friendship_user_1 ON friendship_1(user_id);
+CREATE INDEX idx_user_contact_user_1 ON user_contact_1(user_id);
 
-CREATE INDEX idx_friendship_user_active_1 ON friendship_1(user_id, deleted_at) WHERE deleted_at = 0;
+CREATE INDEX idx_user_contact_user_active_1 ON user_contact_1(user_id, deleted_at) WHERE deleted_at = 0;
 
-CREATE INDEX idx_friendship_user_starred_1 ON friendship_1(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
+CREATE INDEX idx_user_contact_user_starred_1 ON user_contact_1(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
 
--- 分表 2: friendship_2
-DROP TABLE IF EXISTS friendship_2;
-CREATE TABLE friendship_2 (
+-- 分表 2: user_contact_2
+DROP TABLE IF EXISTS user_contact_2;
+CREATE TABLE user_contact_2 (
     id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
 
-    -- 好友备注名
+    user_id BIGINT NOT NULL,
+    contact_id BIGINT NOT NULL,
+
+    -- 联系人备注名
     remark_name VARCHAR(64) NOT NULL DEFAULT '',
 
     -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
-    source friendship_source_enum NOT NULL DEFAULT 'search',
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
-    -- 好友标签
+    -- 联系人标签
     tags VARCHAR(128)[] DEFAULT '{}',
 
-    -- 好友分组
+    -- 联系人分组
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',
 
     -- 状态标记
-    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标好友
+    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,  -- 黑名单
 
     added_at BIGINT NOT NULL,
@@ -1109,52 +1128,53 @@ CREATE TABLE friendship_2 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_friendship_2 UNIQUE(user_id, friend_id)
+    CONSTRAINT uk_user_contact_2 UNIQUE(user_id, contact_id)
 );
 
-COMMENT ON TABLE friendship_2 IS '【 写入侧 】好友关系表';
-COMMENT ON COLUMN friendship_2.id IS '主键 ID';
-COMMENT ON COLUMN friendship_2.user_id IS '用户 ID';
-COMMENT ON COLUMN friendship_2.friend_id IS '好友 ID';
-COMMENT ON COLUMN friendship_2.remark_name IS '好友备注名';
-COMMENT ON COLUMN friendship_2.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
-COMMENT ON COLUMN friendship_2.tags IS '好友标签数组';
-COMMENT ON COLUMN friendship_2.group_name IS '好友分组';
-COMMENT ON COLUMN friendship_2.is_starred IS '是否星标好友';
-COMMENT ON COLUMN friendship_2.is_blocked IS '是否拉黑';
-COMMENT ON COLUMN friendship_2.added_at IS '添加时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_2.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_2.created_at IS '创建时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_2.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+COMMENT ON TABLE user_contact_2 IS '【 写入侧 】用户联系人表';
+COMMENT ON COLUMN user_contact_2.id IS '主键 ID';
+COMMENT ON COLUMN user_contact_2.user_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_2.contact_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_2.remark_name IS '联系人备注名';
+COMMENT ON COLUMN user_contact_2.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
+COMMENT ON COLUMN user_contact_2.tags IS '联系人标签数组';
+COMMENT ON COLUMN user_contact_2.group_name IS '联系人分组';
+COMMENT ON COLUMN user_contact_2.is_starred IS '是否星标联系人';
+COMMENT ON COLUMN user_contact_2.is_blocked IS '是否黑名单联系人';
+COMMENT ON COLUMN user_contact_2.added_at IS '添加时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_2.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_2.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_2.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 创建索引
-CREATE INDEX idx_friendship_user_2 ON friendship_2(user_id);
+CREATE INDEX idx_user_contact_user_2 ON user_contact_2(user_id);
 
-CREATE INDEX idx_friendship_user_active_2 ON friendship_2(user_id, deleted_at) WHERE deleted_at = 0;
+CREATE INDEX idx_user_contact_user_active_2 ON user_contact_2(user_id, deleted_at) WHERE deleted_at = 0;
 
-CREATE INDEX idx_friendship_user_starred_2 ON friendship_2(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
+CREATE INDEX idx_user_contact_user_starred_2 ON user_contact_2(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
 
--- 分表 3: friendship_3
-DROP TABLE IF EXISTS friendship_3;
-CREATE TABLE friendship_3 (
+-- 分表 3: user_contact_3
+DROP TABLE IF EXISTS user_contact_3;
+CREATE TABLE user_contact_3 (
     id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
 
-    -- 好友备注名
+    user_id BIGINT NOT NULL,
+    contact_id BIGINT NOT NULL,
+
+    -- 联系人备注名
     remark_name VARCHAR(64) NOT NULL DEFAULT '',
 
     -- 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
-    source friendship_source_enum NOT NULL DEFAULT 'search',
+    source contact_source_enum NOT NULL DEFAULT 'search',
 
-    -- 好友标签
+    -- 联系人标签
     tags VARCHAR(128)[] DEFAULT '{}',
 
-    -- 好友分组
+    -- 联系人分组
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',
 
     -- 状态标记
-    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标好友
+    is_starred BOOLEAN NOT NULL DEFAULT FALSE,  -- 星标
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,  -- 黑名单
 
     added_at BIGINT NOT NULL,
@@ -1164,30 +1184,30 @@ CREATE TABLE friendship_3 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_friendship_3 UNIQUE(user_id, friend_id)
+    CONSTRAINT uk_user_contact_3 UNIQUE(user_id, contact_id)
 );
 
-COMMENT ON TABLE friendship_3 IS '【 写入侧 】好友关系表';
-COMMENT ON COLUMN friendship_3.id IS '主键 ID';
-COMMENT ON COLUMN friendship_3.user_id IS '用户 ID';
-COMMENT ON COLUMN friendship_3.friend_id IS '好友 ID';
-COMMENT ON COLUMN friendship_3.remark_name IS '好友备注名';
-COMMENT ON COLUMN friendship_3.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
-COMMENT ON COLUMN friendship_3.tags IS '好友标签数组';
-COMMENT ON COLUMN friendship_3.group_name IS '好友分组';
-COMMENT ON COLUMN friendship_3.is_starred IS '是否星标好友';
-COMMENT ON COLUMN friendship_3.is_blocked IS '是否拉黑';
-COMMENT ON COLUMN friendship_3.added_at IS '添加时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_3.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_3.created_at IS '创建时间戳 ( Unix 毫秒值 )';
-COMMENT ON COLUMN friendship_3.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+COMMENT ON TABLE user_contact_3 IS '【 写入侧 】用户联系人表';
+COMMENT ON COLUMN user_contact_3.id IS '主键 ID';
+COMMENT ON COLUMN user_contact_3.user_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_3.contact_id IS '联系人 ID';
+COMMENT ON COLUMN user_contact_3.remark_name IS '联系人备注名';
+COMMENT ON COLUMN user_contact_3.source IS '添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )';
+COMMENT ON COLUMN user_contact_3.tags IS '联系人标签数组';
+COMMENT ON COLUMN user_contact_3.group_name IS '联系人分组';
+COMMENT ON COLUMN user_contact_3.is_starred IS '是否星标联系人';
+COMMENT ON COLUMN user_contact_3.is_blocked IS '是否黑名单联系人';
+COMMENT ON COLUMN user_contact_3.added_at IS '添加时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_3.deleted_at IS '删除时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_3.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN user_contact_3.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 创建索引
-CREATE INDEX idx_friendship_user_3 ON friendship_3(user_id);
+CREATE INDEX idx_user_contact_user_3 ON user_contact_3(user_id);
 
-CREATE INDEX idx_friendship_user_active_3 ON friendship_3(user_id, deleted_at) WHERE deleted_at = 0;
+CREATE INDEX idx_user_contact_user_active_3 ON user_contact_3(user_id, deleted_at) WHERE deleted_at = 0;
 
-CREATE INDEX idx_friendship_user_starred_3 ON friendship_3(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
+CREATE INDEX idx_user_contact_user_starred_3 ON user_contact_3(user_id, is_starred) WHERE is_starred = TRUE AND deleted_at = 0;
 
 -- ============================================
 -- 表: user_contact_view (分表数: 4)
@@ -1198,14 +1218,14 @@ DROP TABLE IF EXISTS user_contact_view_0;
 CREATE TABLE user_contact_view_0 (
     id BIGINT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    contact_id BIGINT NOT NULL,                                 -- 好友 user_id
+    contact_id BIGINT NOT NULL,                                 -- 联系人 user_id
 
     -- 联系人信息 ( 冗余自 user 表 )
-    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 好友昵称 ( 冗余 )
-    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 好友头像 ( 冗余 )
-    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】好友信息版本号 ( 用于同步检测 )
+    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 联系人昵称 ( 冗余 )
+    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 联系人头像 ( 冗余 )
+    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】联系人信息版本号 ( 用于同步检测 )
 
-    -- 好友关系信息 ( 冗余自 friendship 表 )
+    -- 好友关系信息 ( 冗余自 user_contact 表 )
     remark_name VARCHAR(64) NOT NULL DEFAULT '',                -- 备注名
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',          -- 分组名
     tags VARCHAR(128)[] DEFAULT '{}',                           -- 标签
@@ -1216,7 +1236,7 @@ CREATE TABLE user_contact_view_0 (
 
     -- 扩展信息 ( 可选，冗余自 user 表 )
     mobile VARCHAR(16) NOT NULL DEFAULT '',                     -- 手机号
-    source friendship_source_enum NOT NULL DEFAULT 'search',    -- 添加来源
+    source contact_source_enum NOT NULL DEFAULT 'search',       -- 添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )
 
     added_at BIGINT NOT NULL,
     deleted_at BIGINT NOT NULL DEFAULT 0,
@@ -1225,7 +1245,7 @@ CREATE TABLE user_contact_view_0 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_user_contact_0 UNIQUE(user_id, contact_id)
+    CONSTRAINT uk_user_contact_view_0 UNIQUE(user_id, contact_id)
 );
 
 COMMENT ON TABLE user_contact_view_0 IS '【 读取侧 】用户联系人视图表 ( 用于通讯录展示，冗余数据 )';
@@ -1276,14 +1296,14 @@ DROP TABLE IF EXISTS user_contact_view_1;
 CREATE TABLE user_contact_view_1 (
     id BIGINT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    contact_id BIGINT NOT NULL,                                 -- 好友 user_id
+    contact_id BIGINT NOT NULL,                                 -- 联系人 user_id
 
     -- 联系人信息 ( 冗余自 user 表 )
-    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 好友昵称 ( 冗余 )
-    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 好友头像 ( 冗余 )
-    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】好友信息版本号 ( 用于同步检测 )
+    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 联系人昵称 ( 冗余 )
+    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 联系人头像 ( 冗余 )
+    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】联系人信息版本号 ( 用于同步检测 )
 
-    -- 好友关系信息 ( 冗余自 friendship 表 )
+    -- 好友关系信息 ( 冗余自 user_contact 表 )
     remark_name VARCHAR(64) NOT NULL DEFAULT '',                -- 备注名
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',          -- 分组名
     tags VARCHAR(128)[] DEFAULT '{}',                           -- 标签
@@ -1294,7 +1314,7 @@ CREATE TABLE user_contact_view_1 (
 
     -- 扩展信息 ( 可选，冗余自 user 表 )
     mobile VARCHAR(16) NOT NULL DEFAULT '',                     -- 手机号
-    source friendship_source_enum NOT NULL DEFAULT 'search',    -- 添加来源
+    source contact_source_enum NOT NULL DEFAULT 'search',       -- 添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )
 
     added_at BIGINT NOT NULL,
     deleted_at BIGINT NOT NULL DEFAULT 0,
@@ -1303,7 +1323,7 @@ CREATE TABLE user_contact_view_1 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_user_contact_1 UNIQUE(user_id, contact_id)
+    CONSTRAINT uk_user_contact_view_1 UNIQUE(user_id, contact_id)
 );
 
 COMMENT ON TABLE user_contact_view_1 IS '【 读取侧 】用户联系人视图表 ( 用于通讯录展示，冗余数据 )';
@@ -1354,14 +1374,14 @@ DROP TABLE IF EXISTS user_contact_view_2;
 CREATE TABLE user_contact_view_2 (
     id BIGINT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    contact_id BIGINT NOT NULL,                                 -- 好友 user_id
+    contact_id BIGINT NOT NULL,                                 -- 联系人 user_id
 
     -- 联系人信息 ( 冗余自 user 表 )
-    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 好友昵称 ( 冗余 )
-    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 好友头像 ( 冗余 )
-    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】好友信息版本号 ( 用于同步检测 )
+    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 联系人昵称 ( 冗余 )
+    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 联系人头像 ( 冗余 )
+    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】联系人信息版本号 ( 用于同步检测 )
 
-    -- 好友关系信息 ( 冗余自 friendship 表 )
+    -- 好友关系信息 ( 冗余自 user_contact 表 )
     remark_name VARCHAR(64) NOT NULL DEFAULT '',                -- 备注名
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',          -- 分组名
     tags VARCHAR(128)[] DEFAULT '{}',                           -- 标签
@@ -1372,7 +1392,7 @@ CREATE TABLE user_contact_view_2 (
 
     -- 扩展信息 ( 可选，冗余自 user 表 )
     mobile VARCHAR(16) NOT NULL DEFAULT '',                     -- 手机号
-    source friendship_source_enum NOT NULL DEFAULT 'search',    -- 添加来源
+    source contact_source_enum NOT NULL DEFAULT 'search',       -- 添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )
 
     added_at BIGINT NOT NULL,
     deleted_at BIGINT NOT NULL DEFAULT 0,
@@ -1381,7 +1401,7 @@ CREATE TABLE user_contact_view_2 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_user_contact_2 UNIQUE(user_id, contact_id)
+    CONSTRAINT uk_user_contact_view_2 UNIQUE(user_id, contact_id)
 );
 
 COMMENT ON TABLE user_contact_view_2 IS '【 读取侧 】用户联系人视图表 ( 用于通讯录展示，冗余数据 )';
@@ -1432,14 +1452,14 @@ DROP TABLE IF EXISTS user_contact_view_3;
 CREATE TABLE user_contact_view_3 (
     id BIGINT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    contact_id BIGINT NOT NULL,                                 -- 好友 user_id
+    contact_id BIGINT NOT NULL,                                 -- 联系人 user_id
 
     -- 联系人信息 ( 冗余自 user 表 )
-    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 好友昵称 ( 冗余 )
-    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 好友头像 ( 冗余 )
-    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】好友信息版本号 ( 用于同步检测 )
+    contact_nickname VARCHAR(64) NOT NULL DEFAULT '',           -- 联系人昵称 ( 冗余 )
+    contact_avatar VARCHAR(256) NOT NULL DEFAULT '',            -- 联系人头像 ( 冗余 )
+    contact_info_ver INT NOT NULL DEFAULT 1,                    -- 【 CQRS 关键字段 】联系人信息版本号 ( 用于同步检测 )
 
-    -- 好友关系信息 ( 冗余自 friendship 表 )
+    -- 好友关系信息 ( 冗余自 user_contact 表 )
     remark_name VARCHAR(64) NOT NULL DEFAULT '',                -- 备注名
     group_name VARCHAR(32) NOT NULL DEFAULT 'friends',          -- 分组名
     tags VARCHAR(128)[] DEFAULT '{}',                           -- 标签
@@ -1450,7 +1470,7 @@ CREATE TABLE user_contact_view_3 (
 
     -- 扩展信息 ( 可选，冗余自 user 表 )
     mobile VARCHAR(16) NOT NULL DEFAULT '',                     -- 手机号
-    source friendship_source_enum NOT NULL DEFAULT 'search',    -- 添加来源
+    source contact_source_enum NOT NULL DEFAULT 'search',       -- 添加来源 ( search=搜索 / qrcode=扫码 / group=群聊 )
 
     added_at BIGINT NOT NULL,
     deleted_at BIGINT NOT NULL DEFAULT 0,
@@ -1459,7 +1479,7 @@ CREATE TABLE user_contact_view_3 (
     updated_at BIGINT NOT NULL,
 
     -- 唯一约束
-    CONSTRAINT uk_user_contact_3 UNIQUE(user_id, contact_id)
+    CONSTRAINT uk_user_contact_view_3 UNIQUE(user_id, contact_id)
 );
 
 COMMENT ON TABLE user_contact_view_3 IS '【 读取侧 】用户联系人视图表 ( 用于通讯录展示，冗余数据 )';

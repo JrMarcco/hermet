@@ -31,10 +31,6 @@ type ChannelApplication struct {
 	UpdatedAt int64 `gorm:"column:updated_at"`
 }
 
-func (ChannelApplication) TableName() string {
-	return "channel_application"
-}
-
 type ChannelApplicationDao interface {
 	Save(ctx context.Context, ca ChannelApplication) (ChannelApplication, error)
 }

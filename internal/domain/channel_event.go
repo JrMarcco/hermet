@@ -1,15 +1,16 @@
 package domain
 
-// EventType 事件类型。
-type EventType string
+// TODO: 是否需要这个类型字段。
+// ChannelEventType 事件类型。
+type ChannelEventType string
 
 const (
-	// EventTypeChannelCreated 频道创建事件。
-	EventTypeChannelCreated EventType = "channel.created"
-	// EventTypeChannelMemberAdded 频道成员添加事件。
-	EventTypeChannelMemberAdded EventType = "channel.member.added"
-	// EventTypeChannelMemberRemoved 频道成员移除事件。
-	EventTypeChannelMemberRemoved EventType = "channel.member.removed"
+	// ChannelEventTypeCreated 频道创建事件。
+	ChannelEventTypeCreated ChannelEventType = "channel.created"
+	// ChannelEventTypeMemberAdded 频道成员添加事件。
+	ChannelEventTypeMemberAdded ChannelEventType = "channel.member.added"
+	// ChannelEventTypeMemberRemoved 频道成员移除事件。
+	ChannelEventTypeMemberRemoved ChannelEventType = "channel.member.removed"
 )
 
 // ChannelCreatedEvent 频道创建事件。

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jrmarcco/hermet/internal/domain"
 	"github.com/jrmarcco/hermet/internal/pkg/sharding"
 	"github.com/jrmarcco/jit/xsync"
 	"gorm.io/gorm"
@@ -15,14 +16,17 @@ import (
 type ContactApplication struct {
 	ID uint64 `gorm:"column:id"`
 
+	TargetID uint64 `gorm:"column:target_id"`
+
 	ApplicantID uint64 `gorm:"column:applicant_id"`
 
-	TargetID     uint64 `gorm:"column:target_id"`
-	TargetName   string `gorm:"column:target_name"`
-	TargetAvatar string `gorm:"column:target_avatar"`
+	ApplicantName   string `gorm:"column:applicant_name"`
+	ApplicantAvatar string `gorm:"column:applicant_avatar"`
 
 	ApplicationStatus  string `gorm:"column:application_status"`
 	ApplicationMessage string `gorm:"column:application_message"`
+
+	Source string `gorm:"column:source"`
 
 	ReviewedAt int64 `gorm:"column:reviewed_at"`
 
@@ -30,12 +34,10 @@ type ContactApplication struct {
 	UpdatedAt int64 `gorm:"column:updated_at"`
 }
 
-func (ContactApplication) TableName() string {
-	return "contact_application"
-}
-
 type ContactApplicationDao interface {
 	Save(ctx context.Context, ca ContactApplication) (ContactApplication, error)
+
+	ListPendingByTargetID(ctx context.Context, targetID uint64) ([]ContactApplication, error)
 }
 
 var _ ContactApplicationDao = (*DefaultContactApplicationDao)(nil)
@@ -71,4 +73,23 @@ func (d *DefaultContactApplicationDao) Save(ctx context.Context, ca ContactAppli
 
 	err = db.WithContext(ctx).Table(dst.TB).Model(&ContactApplication{}).Create(&ca).Error
 	return ca, err
+}
+
+func (d *DefaultContactApplicationDao) ListPendingByTargetID(ctx context.Context, targetID uint64) ([]ContactApplication, error) {
+	dst, err := d.shardHelper.DstFromSharder(sharding.NewSingleIDSharder(targetID))
+	if err != nil {
+		return nil, err
+	}
+
+	db, ok := d.dbs.Load(dst.DB)
+	if !ok {
+		return nil, fmt.Errorf("failed to load database [ %s ]", dst.DB)
+	}
+
+	var cas []ContactApplication
+	err = db.WithContext(ctx).Table(dst.TB).Model(&ContactApplication{}).
+		Where("target_id = ?", targetID).
+		Where("application_status = ?", string(domain.ApplicationStatusPending)).
+		Find(&cas).Error
+	return cas, err
 }

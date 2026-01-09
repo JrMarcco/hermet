@@ -17,6 +17,18 @@ func W(bizFunc func(*gin.Context) (R, error)) gin.HandlerFunc {
 	}
 }
 
+// U 封装包含用户登录信息的 gin.HandlerFunc。
+func U(bizFunc func(*gin.Context, ContextUser) (R, error)) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		au, ok := extractAuthUser(ctx)
+		if !ok {
+			return
+		}
+		r, err := bizFunc(ctx, au)
+		writeRes(ctx, r, err)
+	}
+}
+
 // B 封装从请求体获取参数的 gin.HandlerFunc。
 func B[Req any](bizFunc func(*gin.Context, Req) (R, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {

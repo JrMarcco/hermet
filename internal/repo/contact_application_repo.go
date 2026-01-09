@@ -5,10 +5,13 @@ import (
 
 	"github.com/jrmarcco/hermet/internal/domain"
 	"github.com/jrmarcco/hermet/internal/repo/dao"
+	"github.com/jrmarcco/jit/xslice"
 )
 
 type ContactApplicationRepo interface {
 	Save(ctx context.Context, application domain.ContactApplication) (domain.ContactApplication, error)
+
+	ListPendingByTargetID(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error)
 }
 
 var _ ContactApplicationRepo = (*DefaultContactApplicationRepo)(nil)
@@ -31,15 +34,27 @@ func (r *DefaultContactApplicationRepo) Save(ctx context.Context, application do
 	return r.toDomain(entity), nil
 }
 
+func (r *DefaultContactApplicationRepo) ListPendingByTargetID(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error) {
+	entities, err := r.contactApplicationDao.ListPendingByTargetID(ctx, targetID)
+	if err != nil {
+		return nil, err
+	}
+
+	return xslice.Map(entities, func(_ int, entity dao.ContactApplication) domain.ContactApplication {
+		return r.toDomain(entity)
+	}), nil
+}
+
 func (r *DefaultContactApplicationRepo) toEntity(application domain.ContactApplication) dao.ContactApplication {
 	return dao.ContactApplication{
 		ID:                 application.ID,
 		ApplicantID:        application.ApplicantID,
 		TargetID:           application.TargetID,
-		TargetName:         application.TargetName,
-		TargetAvatar:       application.TargetAvatar,
+		ApplicantName:      application.ApplicantName,
+		ApplicantAvatar:    application.ApplicantAvatar,
 		ApplicationStatus:  string(application.ApplicationStatus),
 		ApplicationMessage: application.ApplicationMessage,
+		Source:             string(application.Source),
 		ReviewedAt:         application.ReviewedAt,
 		CreatedAt:          application.CreatedAt,
 		UpdatedAt:          application.UpdatedAt,
@@ -51,10 +66,11 @@ func (r *DefaultContactApplicationRepo) toDomain(entity dao.ContactApplication) 
 		ID:                 entity.ID,
 		ApplicantID:        entity.ApplicantID,
 		TargetID:           entity.TargetID,
-		TargetName:         entity.TargetName,
-		TargetAvatar:       entity.TargetAvatar,
+		ApplicantName:      entity.ApplicantName,
+		ApplicantAvatar:    entity.ApplicantAvatar,
 		ApplicationStatus:  domain.ApplicationStatus(entity.ApplicationStatus),
 		ApplicationMessage: entity.ApplicationMessage,
+		Source:             domain.UserContactSource(entity.Source),
 		ReviewedAt:         entity.ReviewedAt,
 		CreatedAt:          entity.CreatedAt,
 		UpdatedAt:          entity.UpdatedAt,

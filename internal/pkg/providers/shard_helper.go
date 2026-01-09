@@ -33,6 +33,14 @@ type shardingConfig struct {
 	TBShardCount uint64 `mapstructure:"tb_shard_count"`
 }
 
+func newChannelApplicationShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
+	cfg := shardingConfig{}
+	if err := viper.UnmarshalKey("sharding.channel_application", &cfg); err != nil {
+		return nil, err
+	}
+	return newShardHelper(gen, extractor, cfg)
+}
+
 func newBizUserShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
 	cfg := shardingConfig{}
 	if err := viper.UnmarshalKey("sharding.biz_user", &cfg); err != nil {
@@ -49,9 +57,9 @@ func newContactApplicationShardHelper(gen idgen.Generator, extractor sharding.Sh
 	return newShardHelper(gen, extractor, cfg)
 }
 
-func newChannelApplicationShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
+func newUserContactShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
 	cfg := shardingConfig{}
-	if err := viper.UnmarshalKey("sharding.channel_application", &cfg); err != nil {
+	if err := viper.UnmarshalKey("sharding.user_contact", &cfg); err != nil {
 		return nil, err
 	}
 	return newShardHelper(gen, extractor, cfg)

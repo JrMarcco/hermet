@@ -5,10 +5,16 @@
 POST {{uri}}/api/v1/auth/sign-in
 Content-Type: application/json
 
+# {
+#     "account": "jrmarcco@gmail.com",
+#     "accountType": "email",
+#     "credential": "<passwd>"
+# }
+
 {
-    "account": "jrmarcco@gmail.com",
+    "account": "test-user-1@example.com",
     "accountType": "email",
-    "credential": "<passwd>"
+    "credential": "hermet@2026"
 }
 
 
@@ -23,17 +29,26 @@ Content-Type: application/json
 
 
 ### Add Contact Application
-
 POST {{uri}}/api/v1/user/contact
 x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
 Content-Type: application/json
 
 {
-    "contactId": 135313211756621824,
-    "message": "hello hello!!!"
+    "contactId": 135343145434849280,
+    "message": "hello hello!!!",
+    "source": "search"
 }
 
 
+### Get Contact Applications
+GET {{uri}}/api/v1/user/contact/applications
+x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
+Content-Type: application/json
+
+
+
+### =======================================================
+### Admin
 
 ### Add User
 POST {{uri}}/api/v1/admin/user

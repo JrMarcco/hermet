@@ -8,7 +8,7 @@
 --   - channel: 频道表
 --   - channel_member: 频道成员表
 --   - channel_read_record: 已读记录表
---   - friendship: 好友关系表
+--   - user_contact: 用户联系人表
 --
 -- 【 读取侧 Read Side 】宽表设计，冗余数据，优化查询性能
 --   - user_conversation_view: 用户会话视图表 ( 按 user_id 分表 )
@@ -36,7 +36,7 @@
     1. 写入侧：
     INSERT INTO channel ( 单聊 channel )
     INSERT INTO channel_member ( 两个成员记录 )
-    INSERT INTO friendship ( 双向好友关系 )
+    INSERT INTO user_contact ( 双向联系人关系 )
 
     2. 读取侧（应用层双写 或 CDC同步）：
     INSERT INTO user_conversation_view ( A 的会话视图 )
@@ -132,7 +132,7 @@
     WHERE id = ?;
 
     注意：软删除后，需要同步 ( 读取侧 )：
-        1. 删除 friendship 关系
+        1. 删除 user_contact 关系
         2. 从好友的 user_contact_view 中移除
         3. 会话视图中标记为已删除用户 ( user_conversation_view )
 

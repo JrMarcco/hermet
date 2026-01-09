@@ -39,10 +39,6 @@ type BizUser struct {
 	UpdatedAt int64 `gorm:"column:updated_at"`
 }
 
-func (BizUser) TableName() string {
-	return "biz_user"
-}
-
 //go:generate mockgen -source=biz_user_dao.go -destination=mock/biz_user_dao.mock.go -package=daomock -typed BizUserDao
 
 type BizUserDao interface {

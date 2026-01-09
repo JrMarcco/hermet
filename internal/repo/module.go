@@ -13,6 +13,11 @@ var RepoFxModule = fx.Module(
 			fx.As(new(BizUserRepo)),
 		),
 
+		// user contact repo
+		fx.Annotate(
+			NewDefaultUserContactRepo,
+			fx.As(new(UserContactRepo)),
+		),
 		// contact application repo
 		fx.Annotate(
 			NewDefaultContactApplicationRepo,

@@ -4,10 +4,6 @@ import "gorm.io/gorm"
 
 type ChannelMember struct{}
 
-func (ChannelMember) TableName() string {
-	return "channel_member"
-}
-
 type ChannelMemberDao interface{}
 
 var _ ChannelMemberDao = (*DefaultChannelMemberDao)(nil)

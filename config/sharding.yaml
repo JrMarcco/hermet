@@ -6,6 +6,13 @@ sharding:
     db_shard_count: 2
     tb_shard_count: 4
 
+  # 用户联系人表。
+  user_contact:
+    db_prefix: "hermet"
+    tb_prefix: "user_contact"
+    db_shard_count: 2
+    tb_shard_count: 4
+
   # 联系人申请表。
   contact_application:
     db_prefix: "hermet"

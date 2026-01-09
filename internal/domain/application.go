@@ -11,14 +11,16 @@ const (
 type ContactApplication struct {
 	ID uint64 `json:"id"`
 
-	ApplicantID uint64 `json:"applicantId"` // 申请人 ID
+	TargetID uint64 `json:"targetId"` // 目标用户 ID
 
-	TargetID     uint64 `json:"targetId"`     // 目标用户 ID
-	TargetName   string `json:"targetName"`   // 目标用户昵称
-	TargetAvatar string `json:"targetAvatar"` // 目标用户头像
+	ApplicantID     uint64 `json:"applicantId"`     // 申请人 ID
+	ApplicantName   string `json:"applicantName"`   // 申请人昵称
+	ApplicantAvatar string `json:"applicantAvatar"` // 申请人头像
 
 	ApplicationStatus  ApplicationStatus `json:"applicationStatus"`
 	ApplicationMessage string            `json:"applicationMessage"`
+
+	Source UserContactSource `json:"source"` // 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
 
 	ReviewedAt int64 `json:"reviewedAt"` // 审批时间戳 ( Unix 毫秒值 )
 
