@@ -244,7 +244,7 @@ CREATE TABLE user_conversation_view (
     )
 );
 
-COMMENT ON TABLE user_conversation_view IS '【读取侧】用户会话视图表 ( 用于会话列表展示，冗余数据 )';
+COMMENT ON TABLE user_conversation_view IS '【 读取侧 】用户会话视图表 ( 用于会话列表展示，冗余数据 )';
 COMMENT ON COLUMN user_conversation_view.id IS '主键 ID';
 COMMENT ON COLUMN user_conversation_view.user_id IS '用户 ID';
 COMMENT ON COLUMN user_conversation_view.channel_id IS '频道 ID';

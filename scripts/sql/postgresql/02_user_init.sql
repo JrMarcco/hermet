@@ -33,7 +33,7 @@ CREATE TABLE biz_user (
 
     -- 状态管理
     user_status user_status_enum NOT NULL DEFAULT 'active',
-    deleted_at BIGINT NOT NULL DEFAULT 0,              -- 软删除 ( 0表示未删除 )
+    deleted_at BIGINT NOT NULL DEFAULT 0,              -- 软删除 ( 0 表示未删除 )
 
     -- 时间戳
     created_at BIGINT NOT NULL,

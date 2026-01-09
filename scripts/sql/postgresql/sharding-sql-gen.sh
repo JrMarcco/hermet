@@ -256,28 +256,47 @@ generate_sharding_sql() {
                 # 替换表名。
                 table_section=$(echo "$table_section" | sed "s/\b${table_name}\b/${sharded_table_name}/g")
 
+                # 替换 CONSTRAINT 名称 ( 添加分表后缀 )。
+                table_section=$(echo "$table_section" | sed -E "s/(CONSTRAINT[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_]*)/\1\2_${table_idx}/g")
+
                 echo "$table_section"
                 echo ""
 
                 # 提取该表的 COMMENT 语句。
                 local comment_section
-                comment_section=$(echo "$content" | grep -E "COMMENT ON (TABLE|COLUMN) ${table_name}[.\s]" | sed "s/\b${table_name}\b/${sharded_table_name}/g")
+                comment_section=$(echo "$content" | grep -E "COMMENT ON (TABLE|COLUMN) ${table_name}([[:space:]]|\\.)" | sed "s/\b${table_name}\b/${sharded_table_name}/g")
 
                 if [[ -n "$comment_section" ]]; then
                     echo "$comment_section"
                     echo ""
                 fi
 
-                # 提取该表的索引创建语句。
+                # 提取该表的索引创建语句 ( 支持多行 )。
                 local index_section
-                index_section=$(echo "$content" | grep -E "CREATE.*INDEX.*ON ${table_name}[[:space:]]*\(" | \
-                    sed "s/\b${table_name}\b/${sharded_table_name}/g" | \
+                index_section=$(echo "$content" | awk -v table="$table_name" '
+                    # 匹配 CREATE INDEX ... ON table_name(
+                    /CREATE[[:space:]]+.*INDEX.*ON[[:space:]]+/ {
+                        # 检查是否包含目标表名
+                        if ($0 ~ "ON[[:space:]]+" table "[[:space:]]*\\(") {
+                            found=1
+                        }
+                    }
+                    # 如果找到了开始，打印所有行直到分号
+                    found {
+                        buffer = buffer $0 "\n"
+                    }
+                    # 遇到分号结束
+                    found && /;$/ {
+                        print buffer
+                        buffer = ""
+                        found=0
+                    }
+                ' | sed "s/\b${table_name}\b/${sharded_table_name}/g" | \
                     sed -E "s/(INDEX[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_]*)/\1\2_${table_idx}/g")
 
                 if [[ -n "$index_section" ]]; then
                     echo "-- 创建索引"
                     echo "$index_section"
-                    echo ""
                 fi
 
                 echo ""
