@@ -90,5 +90,8 @@ func (s *DefaultUserService) AddContact(ctx context.Context, applicantID, target
 		return err
 	}
 
+	// TODO: 向 target 用户发送申请通知。
+	// 向 target 用户发送申请通知。
+
 	return nil
 }

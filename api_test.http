@@ -22,6 +22,17 @@ Content-Type: application/json
 
 
 
+### Add Contact Application
+
+POST {{uri}}/api/v1/user/contact
+x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
+Content-Type: application/json
+
+{
+    "contactId": 135313211756621824,
+    "message": "hello hello!!!"
+}
+
 
 
 ### Add User
