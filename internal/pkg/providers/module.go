@@ -57,5 +57,13 @@ var ShardingFxModule = fx.Module(
 			newBizUserShardHelper,
 			fx.ResultTags(`name:"biz_user_shard_helper"`),
 		),
+		fx.Annotate(
+			newContactApplicationShardHelper,
+			fx.ResultTags(`name:"contact_application_shard_helper"`),
+		),
+		fx.Annotate(
+			newChannelApplicationShardHelper,
+			fx.ResultTags(`name:"channel_application_shard_helper"`),
+		),
 	),
 )

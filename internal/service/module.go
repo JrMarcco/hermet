@@ -11,6 +11,11 @@ var ServiceFxModule = fx.Module(
 	"service",
 	fx.Provide(
 		newAuthService,
+
+		fx.Annotate(
+			NewDefaultUserService,
+			fx.As(new(UserService)),
+		),
 	),
 )
 

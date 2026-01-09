@@ -53,9 +53,9 @@
 
 【 数据流 2: 发送消息 】
 
-    1. 写入消息表 ( message 表, 在 mongodb 中 )
+    1. 写入消息表 ( message 表 - MongoDB )
 
-    2. 更新会话视图 ( 通过 Kafka 异步 )
+    2. 更新会话视图 ( 通过 Kafka 异步更新 )
     查询频道所有成员：SELECT user_id FROM channel_member WHERE channel_id = ?
     批量更新会话视图：
     UPDATE user_conversation_view SET
@@ -122,7 +122,7 @@
     WHERE user_id IN ( 成员列表 ) AND channel_id = ?
 
 
-【 数据流 5: 软删除用户】
+【 数据流 5: 软删除用户 】
 
     -- 注销用户账号 ( 软删除 )
     UPDATE biz_user

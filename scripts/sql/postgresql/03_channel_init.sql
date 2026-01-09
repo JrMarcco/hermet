@@ -448,21 +448,62 @@ CREATE INDEX idx_cori_contact ON contact_reverse_index(contact_user_id);
 -- 其他业务表
 -- ============================================================================
 
--- 频道申请状态枚举
-DROP TYPE IF EXISTS channel_application_status_enum CASCADE;
-CREATE TYPE channel_application_status_enum AS ENUM ('pending', 'approved', 'rejected');
+-- 申请状态枚举
+DROP TYPE IF EXISTS application_status_enum CASCADE;
+CREATE TYPE application_status_enum AS ENUM ('pending', 'approved', 'rejected');
 
--- 频道申请表 ( 好友申请 / 入群申请 )
+-- 联系人申请表 ( 加好友申请 - 以 TargetID 为分片键 )
+DROP TABLE IF EXISTS contact_application;
+CREATE TABLE contact_application (
+    id BIGINT PRIMARY KEY,
+
+    applicant_id BIGINT NOT NULL,
+
+    -- 目标用户信息。
+    target_id BIGINT NOT NULL,
+    target_name VARCHAR(128) NOT NULL DEFAULT '',
+    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    application_status application_status_enum NOT NULL,
+    application_message VARCHAR(256) NOT NULL DEFAULT '',
+
+    reviewed_at BIGINT NOT NULL DEFAULT 0,
+
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL
+);
+
+COMMENT ON TABLE contact_application IS '联系人申请表 ( 加好友申请 )';
+COMMENT ON COLUMN contact_application.id IS '主键 ID';
+COMMENT ON COLUMN contact_application.applicant_id IS '申请人 ID';
+COMMENT ON COLUMN contact_application.target_id IS '目标用户 ID';
+COMMENT ON COLUMN contact_application.target_name IS '目标用户昵称';
+COMMENT ON COLUMN contact_application.target_avatar IS '目标用户头像';
+COMMENT ON COLUMN contact_application.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
+COMMENT ON COLUMN contact_application.application_message IS '申请验证消息';
+COMMENT ON COLUMN contact_application.reviewed_at IS '审批时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN contact_application.created_at IS '创建时间戳 ( Unix 毫秒值 )';
+COMMENT ON COLUMN contact_application.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
+
+-- 索引
+CREATE INDEX idx_contact_application_target ON contact_application(target_id);
+CREATE INDEX idx_contact_application_pending ON contact_application(target_id, application_status) WHERE application_status = 'pending';
+
+
+
+-- 频道申请表 ( 入群申请 - 以 ChannelID 为分片键 )
 DROP TABLE IF EXISTS channel_application;
 CREATE TABLE channel_application (
     id BIGINT PRIMARY KEY,
-    applicant_id BIGINT NOT NULL,
-    target_id BIGINT NOT NULL,                              -- 单聊：对方 user_id / 群聊：channel_id
-    target_name VARCHAR(128) NOT NULL DEFAULT '',
-    target_avatar VARCHAR(256) NOT NULL DEFAULT '',
-    target_type channel_type_enum NOT NULL,
 
-    application_status channel_application_status_enum NOT NULL,
+    applicant_id BIGINT NOT NULL,
+
+    -- 目标渠道信息。
+    channel_id BIGINT NOT NULL,
+    channel_name VARCHAR(128) NOT NULL DEFAULT '',
+    channel_avatar VARCHAR(256) NOT NULL DEFAULT '',
+
+    application_status application_status_enum NOT NULL,
     application_message VARCHAR(256) NOT NULL DEFAULT '',
 
     reviewer_id BIGINT NOT NULL DEFAULT 0,
@@ -472,13 +513,12 @@ CREATE TABLE channel_application (
     updated_at BIGINT NOT NULL
 );
 
-COMMENT ON TABLE channel_application IS '频道申请表 ( 好友申请 / 入群申请 )';
+COMMENT ON TABLE channel_application IS '频道申请表 ( 入群申请 )';
 COMMENT ON COLUMN channel_application.id IS '主键 ID';
 COMMENT ON COLUMN channel_application.applicant_id IS '申请人 ID';
-COMMENT ON COLUMN channel_application.target_id IS '目标 ID ( 单聊 - 对方 user_id / 群聊 - channel_id )';
-COMMENT ON COLUMN channel_application.target_name IS '目标名称';
-COMMENT ON COLUMN channel_application.target_avatar IS '目标头像';
-COMMENT ON COLUMN channel_application.target_type IS '目标类型 ( single=加好友 / group=入群 )';
+COMMENT ON COLUMN channel_application.channel_id IS '频道 ID';
+COMMENT ON COLUMN channel_application.channel_name IS '频道名称';
+COMMENT ON COLUMN channel_application.channel_avatar IS '频道头像';
 COMMENT ON COLUMN channel_application.application_status IS '申请状态 ( pending=待处理 / approved=已批准 / rejected=已拒绝 )';
 COMMENT ON COLUMN channel_application.application_message IS '申请验证消息';
 COMMENT ON COLUMN channel_application.reviewer_id IS '审批人 ID';
@@ -487,8 +527,5 @@ COMMENT ON COLUMN channel_application.created_at IS '创建时间戳 ( Unix 毫�
 COMMENT ON COLUMN channel_application.updated_at IS '更新时间戳 ( Unix 毫秒值 )';
 
 -- 索引
-CREATE INDEX idx_channel_application_applicant ON channel_application(applicant_id);
-CREATE INDEX idx_channel_application_target ON channel_application(target_id, target_type);
-CREATE INDEX idx_channel_application_status ON channel_application(application_status);
-CREATE INDEX idx_channel_application_pending ON channel_application(target_id, application_status)
-    WHERE application_status = 'pending';
+CREATE INDEX idx_channel_application_channel ON channel_application(channel_id);
+CREATE INDEX idx_channel_application_pending ON channel_application(channel_id, application_status) WHERE application_status = 'pending';

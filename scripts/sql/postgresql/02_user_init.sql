@@ -20,7 +20,7 @@ CREATE TABLE biz_user (
     mobile VARCHAR(16) NOT NULL,
     passwd VARCHAR(128) NOT NULL,
 
-    -- 个人信息（会被冗余到读取侧）
+    -- 个人信息 ( 会被冗余到读取侧 )
     nickname VARCHAR(64) NOT NULL,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     gender gender_enum NOT NULL DEFAULT 'unknown',

@@ -14,7 +14,7 @@
 
 set -e
 
-# 默认配置
+# 默认配置。
 DB_COUNT=2
 TABLE_COUNT=4
 OUTPUT_DIR="./sharding"
@@ -22,13 +22,13 @@ DB_PREFIX=""
 INPUT_FILE=""
 PROCESS_ALL=false
 
-# 颜色输出
+# 颜色输出。
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# 显示帮助信息
+# 显示帮助信息。
 show_help() {
     cat << EOF
 分库分表SQL脚本生成工具 ( PostgreSQL 版本 )
@@ -321,7 +321,7 @@ process_single_file() {
     # 为每个数据库分片生成 SQL。
     for ((db_idx=0; db_idx<DB_COUNT; db_idx++)); do
         local db_dir="${OUTPUT_DIR}/db_${db_idx}"
-        # 创建数据库子目录
+        # 创建数据库子目录。
         mkdir -p "$db_dir"
         local output_file="${db_dir}/${base_name}.sql"
         generate_sharding_sql "$input_file" "$db_idx" "$output_file"
@@ -366,7 +366,7 @@ main() {
     # 生成数据库初始化脚本。
     generate_db_init_scripts
 
-    # 处理表文件
+    # 处理表文件。
     if [[ "$PROCESS_ALL" == true ]]; then
         process_all_files
     elif [[ -n "$INPUT_FILE" ]]; then

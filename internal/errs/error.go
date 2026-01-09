@@ -9,4 +9,6 @@ var (
 
 	ErrInvalidUser        = errors.New("invalid user")
 	ErrInvalidAccountType = errors.New("invalid account type")
+
+	ErrRecordNotFound = errors.New("record not found")
 )

@@ -1,6 +1,21 @@
 sharding:
+  # 用户表。
   biz_user:
     db_prefix: "hermet"
     tb_prefix: "biz_user"
+    db_shard_count: 2
+    tb_shard_count: 4
+
+  # 联系人申请表。
+  contact_application:
+    db_prefix: "hermet"
+    tb_prefix: "contact_application"
+    db_shard_count: 2
+    tb_shard_count: 4
+
+  # 频道申请表。
+  channel_application:
+    db_prefix: "hermet"
+    tb_prefix: "channel_application"
     db_shard_count: 2
     tb_shard_count: 4

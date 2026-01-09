@@ -19,3 +19,23 @@ Content-Type: application/json
 {
     "refreshToken": "{{signIn.response.body.$.data.refreshToken}}"
 }
+
+
+
+
+
+### Add User
+POST {{uri}}/api/v1/admin/user
+x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
+Content-Type: application/json
+
+{
+    "email": "test-user-0@example.com",
+    "mobile": "13800138000",
+    "nickname": "ciallo",
+    "avatar": "",
+    "gender": "female",
+    "region": "",
+    "birthday": 0,
+    "tagline": ""
+}

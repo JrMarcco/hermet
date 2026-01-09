@@ -26,19 +26,42 @@ func newIDGen() (idGenFxResult, error) {
 	}, nil
 }
 
-func newBizUserShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
-	type config struct {
-		DBPrefix     string `mapstructure:"db_prefix"`
-		TBPrefix     string `mapstructure:"tb_prefix"`
-		DBShardCount uint64 `mapstructure:"db_shard_count"`
-		TBShardCount uint64 `mapstructure:"tb_shard_count"`
-	}
+type shardingConfig struct {
+	DBPrefix     string `mapstructure:"db_prefix"`
+	TBPrefix     string `mapstructure:"tb_prefix"`
+	DBShardCount uint64 `mapstructure:"db_shard_count"`
+	TBShardCount uint64 `mapstructure:"tb_shard_count"`
+}
 
-	cfg := config{}
+func newBizUserShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
+	cfg := shardingConfig{}
 	if err := viper.UnmarshalKey("sharding.biz_user", &cfg); err != nil {
 		return nil, err
 	}
+	return newShardHelper(gen, extractor, cfg)
+}
 
+func newContactApplicationShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
+	cfg := shardingConfig{}
+	if err := viper.UnmarshalKey("sharding.contact_application", &cfg); err != nil {
+		return nil, err
+	}
+	return newShardHelper(gen, extractor, cfg)
+}
+
+func newChannelApplicationShardHelper(gen idgen.Generator, extractor sharding.ShardValExtractor) (*sharding.ShardHelper, error) {
+	cfg := shardingConfig{}
+	if err := viper.UnmarshalKey("sharding.channel_application", &cfg); err != nil {
+		return nil, err
+	}
+	return newShardHelper(gen, extractor, cfg)
+}
+
+func newShardHelper(
+	gen idgen.Generator,
+	extractor sharding.ShardValExtractor,
+	cfg shardingConfig,
+) (*sharding.ShardHelper, error) {
 	baseStrategy, err := sharding.NewModuloSharding(extractor, cfg.DBPrefix, cfg.TBPrefix, cfg.DBShardCount, cfg.TBShardCount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create modulo sharding: %w", err)

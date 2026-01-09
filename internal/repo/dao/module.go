@@ -11,6 +11,16 @@ var DaoFxModule = fx.Module(
 			fx.ParamTags(`name:"db_sharding_clients"`, `name:"biz_user_shard_helper"`),
 		),
 		fx.Annotate(
+			NewDefaultContactApplicationDao,
+			fx.As(new(ContactApplicationDao)),
+			fx.ParamTags(`name:"db_sharding_clients"`, `name:"contact_application_shard_helper"`),
+		),
+		fx.Annotate(
+			NewDefaultChannelApplicationDao,
+			fx.As(new(ChannelApplicationDao)),
+			fx.ParamTags(`name:"db_sharding_clients"`, `name:"channel_application_shard_helper"`),
+		),
+		fx.Annotate(
 			NewMongoMessageDao,
 			fx.As(new(MessageDao)),
 		),

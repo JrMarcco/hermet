@@ -2,7 +2,7 @@
 -- 分库分表SQL脚本
 -- 数据库: hermet_1
 -- 分表数量: 4
--- 生成时间: 2026-01-09 12:09:32
+-- 生成时间: 2026-01-09 16:40:52
 -- 原始文件: ./02_user_init.sql
 -- ============================================
 
@@ -30,7 +30,7 @@ CREATE TABLE biz_user_0 (
     mobile VARCHAR(16) NOT NULL,
     passwd VARCHAR(128) NOT NULL,
 
-    -- 个人信息（会被冗余到读取侧）
+    -- 个人信息 ( 会被冗余到读取侧 )
     nickname VARCHAR(64) NOT NULL,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     gender gender_enum NOT NULL DEFAULT 'unknown',
@@ -86,7 +86,7 @@ CREATE TABLE biz_user_1 (
     mobile VARCHAR(16) NOT NULL,
     passwd VARCHAR(128) NOT NULL,
 
-    -- 个人信息（会被冗余到读取侧）
+    -- 个人信息 ( 会被冗余到读取侧 )
     nickname VARCHAR(64) NOT NULL,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     gender gender_enum NOT NULL DEFAULT 'unknown',
@@ -142,7 +142,7 @@ CREATE TABLE biz_user_2 (
     mobile VARCHAR(16) NOT NULL,
     passwd VARCHAR(128) NOT NULL,
 
-    -- 个人信息（会被冗余到读取侧）
+    -- 个人信息 ( 会被冗余到读取侧 )
     nickname VARCHAR(64) NOT NULL,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     gender gender_enum NOT NULL DEFAULT 'unknown',
@@ -198,7 +198,7 @@ CREATE TABLE biz_user_3 (
     mobile VARCHAR(16) NOT NULL,
     passwd VARCHAR(128) NOT NULL,
 
-    -- 个人信息（会被冗余到读取侧）
+    -- 个人信息 ( 会被冗余到读取侧 )
     nickname VARCHAR(64) NOT NULL,
     avatar VARCHAR(256) NOT NULL DEFAULT '',
     gender gender_enum NOT NULL DEFAULT 'unknown',

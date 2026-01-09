@@ -13,5 +13,18 @@ var APIFxModule = fx.Module(
 			fx.As(new(xgin.RouteRegistry)),
 			fx.ResultTags(`group:"api_registry"`),
 		),
+
+		fx.Annotate(
+			NewUserHandler,
+			fx.As(new(xgin.RouteRegistry)),
+			fx.ResultTags(`group:"api_registry"`),
+		),
+
+		// TODO: 临时 api 接口。
+		fx.Annotate(
+			NewAdminHandler,
+			fx.As(new(xgin.RouteRegistry)),
+			fx.ResultTags(`group:"api_registry"`),
+		),
 	),
 )
