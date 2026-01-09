@@ -15,7 +15,8 @@ import (
 type UserService interface {
 	AddUser(ctx context.Context, user domain.BizUser) error
 
-	AddContact(ctx context.Context, event domain.ContactApplicantEvent) error
+	ContactApplicant(ctx context.Context, event domain.ContactApplicantEvent) error
+
 	ListContactApplications(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error)
 }
 
@@ -69,7 +70,7 @@ func (s *DefaultUserService) AddUser(ctx context.Context, user domain.BizUser) e
 	return nil
 }
 
-func (s *DefaultUserService) AddContact(ctx context.Context, event domain.ContactApplicantEvent) error {
+func (s *DefaultUserService) ContactApplicant(ctx context.Context, event domain.ContactApplicantEvent) error {
 	// 判断是否已经存在联系人。
 	uc, err := s.userContactRepo.FindByUserIDAndContactID(ctx, event.ApplicantID, event.TargetID)
 	if err != nil && !errors.Is(err, errs.ErrRecordNotFound) {

@@ -39,18 +39,18 @@ func (h *AuthHandler) Register(engine *gin.Engine) {
 	authV1.Handle(http.MethodPost, "/sign-out", xgin.W(h.SignOut))
 }
 
-type signInRequest struct {
+type signInReq struct {
 	Account     string `json:"account"`
 	AccountType string `json:"accountType"`
 	Credential  string `json:"credential"`
 }
 
-type tokenResponse struct {
+type tokenResp struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
 
-func (h *AuthHandler) SignIn(ctx *gin.Context, req signInRequest) (xgin.R, error) {
+func (h *AuthHandler) SignIn(ctx *gin.Context, req signInReq) (xgin.R, error) {
 	au, err := h.svc.SignIn(ctx, req.Account, req.AccountType, req.Credential)
 	if err != nil {
 		return xgin.R{}, err
@@ -68,7 +68,7 @@ func (h *AuthHandler) SignIn(ctx *gin.Context, req signInRequest) (xgin.R, error
 
 	return xgin.R{
 		Code: http.StatusOK,
-		Data: tokenResponse{
+		Data: tokenResp{
 			AccessToken:  at,
 			RefreshToken: st,
 		},
@@ -104,7 +104,7 @@ func (h *AuthHandler) RefreshToken(ctx *gin.Context, req refreshTokenRequest) (x
 
 	return xgin.R{
 		Code: http.StatusOK,
-		Data: tokenResponse{
+		Data: tokenResp{
 			AccessToken:  at,
 			RefreshToken: st,
 		},

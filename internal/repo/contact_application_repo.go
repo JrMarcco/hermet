@@ -5,7 +5,6 @@ import (
 
 	"github.com/jrmarcco/hermet/internal/domain"
 	"github.com/jrmarcco/hermet/internal/repo/dao"
-	"github.com/jrmarcco/jit/xslice"
 )
 
 type ContactApplicationRepo interface {
@@ -40,9 +39,11 @@ func (r *DefaultContactApplicationRepo) ListPendingByTargetID(ctx context.Contex
 		return nil, err
 	}
 
-	return xslice.Map(entities, func(_ int, entity dao.ContactApplication) domain.ContactApplication {
-		return r.toDomain(entity)
-	}), nil
+	domains := make([]domain.ContactApplication, 0, len(entities))
+	for i := range entities {
+		domains = append(domains, r.toDomain(entities[i]))
+	}
+	return domains, nil
 }
 
 func (r *DefaultContactApplicationRepo) toEntity(application domain.ContactApplication) dao.ContactApplication {
