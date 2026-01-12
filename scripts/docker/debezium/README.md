@@ -26,7 +26,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                       Application Layer                          │
+│                      Application Layer                           │
 │                    (Go Service - Hermet)                         │
 └────────┬─────────────────────────────────────────────────────────┘
          │
@@ -45,7 +45,7 @@
          │ WAL (Write-Ahead Log)                        │
          │                                              │
 ┌────────▼──────────────────────────────────────────────▼───────────┐
-│                      Debezium Connectors                          │
+│                     Debezium Connectors                           │
 │  ┌──────────────────────┐         ┌──────────────────────┐        │
 │  │  DB0 Connector       │         │  DB1 Connector       │        │
 │  │  - Captures changes  │         │  - Captures changes  │        │
@@ -56,7 +56,7 @@
               │ Change Events                  │
               ▼                                ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                      Kafka Cluster (3 nodes)                     │
+│                    Kafka Cluster (3 nodes)                       │
 │  ┌─────────────────────────────────────────────────────────┐     │
 │  │  Topics:                                                │     │
 │  │  - cqrs.biz_user.changed                                │     │
@@ -69,7 +69,7 @@
          │ Consume Events
          ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                     Consumer Services (Go)                       │
+│                    Consumer Services (Go)                        │
 │  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐          │
 │  │ Conversation │   │   Contact    │   │    Push      │          │
 │  │   Updater    │   │   Updater    │   │  Notifier    │          │
@@ -86,7 +86,7 @@
           │ Read Queries
           │
 ┌─────────┴────────────────────────────────────────────────────────┐
-│                       Application Layer                          │
+│                    Application Layer                             │   
 │                    (Read Operations)                             │
 └──────────────────────────────────────────────────────────────────┘
 ```
