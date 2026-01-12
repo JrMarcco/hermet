@@ -33,18 +33,18 @@
 
 【 数据流 1: 添加好友 】
 
-    1. 写入侧：
+    1. 写入侧:
     INSERT INTO channel ( 单聊 channel )
     INSERT INTO channel_member ( 两个成员记录 )
     INSERT INTO user_contact ( 双向联系人关系 )
 
-    2. 读取侧（应用层双写 或 CDC同步）：
+    2. 读取侧 ( 应用层双写 或 CDC 同步 ):
     INSERT INTO user_conversation_view ( A 的会话视图 )
     INSERT INTO user_conversation_view ( B 的会话视图 )
     INSERT INTO user_contact_view ( A 的联系人视图 )
     INSERT INTO user_contact_view ( B 的联系人视图 )
 
-    3. 反向索引：
+    3. 反向索引:
     INSERT INTO conversation_reverse_index ( B, A, channel_id )  -- B 在 A 的会话中
     INSERT INTO conversation_reverse_index ( A, B, channel_id )  -- A 在 B 的会话中
     INSERT INTO contact_reverse_index ( B, A )  -- B 在 A 的联系人中
@@ -56,8 +56,8 @@
     1. 写入消息表 ( message 表 - MongoDB )
 
     2. 更新会话视图 ( 通过 Kafka 异步更新 )
-    查询频道所有成员：SELECT user_id FROM channel_member WHERE channel_id = ?
-    批量更新会话视图：
+    查询频道所有成员: SELECT user_id FROM channel_member WHERE channel_id = ?
+    批量更新会话视图:
     UPDATE user_conversation_view SET
         last_message_id = ?,
         last_message_content = ?,
@@ -70,17 +70,17 @@
 
 【 数据流 3: 用户修改资料 ( 昵称 / 头像 ) 】
 
-    1. 写入侧：
+    1. 写入侧:
     UPDATE user SET nickname = ?, avatar = ?, profile_ver = profile_ver + 1
     WHERE id = ?
 
-    2. 通过反向索引找到需要更新的记录：
-        a) 更新会话视图：
+    2. 通过反向索引找到需要更新的记录:
+        a) 更新会话视图:
         SELECT owner_user_id, channel_id
         FROM conversation_reverse_index
         WHERE peer_user_id = ?
 
-        对每条记录：
+        对每条记录:
         UPDATE user_conversation_view_{shard} SET
             peer_nickname = ?,
             peer_avatar = ?,
@@ -89,12 +89,12 @@
             conversation_info_ver = conversation_info_ver + 1
         WHERE user_id = ? AND channel_id = ?
 
-        b) 更新联系人视图：
+        b) 更新联系人视图:
         SELECT owner_user_id
         FROM contact_reverse_index
         WHERE contact_user_id = ?
 
-        对每条记录：
+        对每条记录:
         UPDATE user_contact_view_{shard} SET
             contact_nickname = ?,
             contact_avatar = ?,
@@ -104,17 +104,17 @@
 
 【 数据流 4: 群名称 / 头像修改 】
 
-    1. 写入侧：
+    1. 写入侧:
     UPDATE channel SET
         channel_name = ?,
         channel_avatar = ?,
         channel_info_ver = channel_info_ver + 1
     WHERE id = ?
 
-    2. 更新所有成员的会话视图：
-    查询群成员：SELECT user_id FROM channel_member WHERE channel_id = ?
+    2. 更新所有成员的会话视图:
+    查询群成员: SELECT user_id FROM channel_member WHERE channel_id = ?
 
-    批量更新：
+    批量更新:
     UPDATE user_conversation_view_{shard} SET
         conversation_name = ?,
         conversation_avatar = ?,
@@ -131,7 +131,7 @@
         updated_at = ?
     WHERE id = ?;
 
-    注意：软删除后，需要同步 ( 读取侧 )：
+    注意: 软删除后，需要同步 ( 读取侧 ):
         1. 删除 user_contact 关系
         2. 从好友的 user_contact_view 中移除
         3. 会话视图中标记为已删除用户 ( user_conversation_view )
@@ -151,7 +151,7 @@
         unread_count,
         is_pinned,
         is_muted
-    FROM user_conversation_view_{tb_idx}
+    FROM user_conversation_view_{shard}
     WHERE user_id = ?
         AND closed_at = 0
         AND is_hidden = FALSE
@@ -169,7 +169,7 @@
         remark_name,
         group_name,
         is_starred
-    FROM user_contact_view_{tb_idx}
+    FROM user_contact_view_{shard}
     WHERE user_id = ?
         AND deleted_at = 0
     ORDER BY is_starred DESC, contact_nickname
@@ -179,7 +179,7 @@
 【 查询示例 3: 搜索用户 】
 
     -- 按昵称搜索用户 ( 模糊匹配 )
-    SELECT id, nickname, avatar, gender, signature
+    SELECT id, nickname, avatar, gender, tagline
     FROM biz_user
     WHERE nickname LIKE '%关键词%'
         AND deleted_at = 0

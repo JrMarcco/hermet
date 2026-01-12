@@ -16,6 +16,7 @@ import (
 
 var _ xgin.RouteRegistry = (*AuthHandler)(nil)
 
+// AuthHandler 认证 HTTP Handler。
 type AuthHandler struct {
 	xsession.Handler
 

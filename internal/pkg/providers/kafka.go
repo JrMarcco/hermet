@@ -78,6 +78,108 @@ type kafkaOAuthConfig struct {
 	ClientSecret string `mapstructure:"client_secret"`
 }
 
+func newKafkaClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (kafkaFxResult, error) {
+	cfg, err := loadKafkaConfig()
+	if err != nil {
+		return kafkaFxResult{}, err
+	}
+
+	// 配置 TLS。
+	tlsConfig, err := configureKafkaTLS(cfg.TLS, zapLogger)
+	if err != nil {
+		return kafkaFxResult{}, err
+	}
+
+	// 配置 SASL。
+	saslMechanism, err := configureKafkaSasl(cfg.SASL, zapLogger)
+	if err != nil {
+		return kafkaFxResult{}, err
+	}
+
+	// 创建 Writer（Producer）。
+	writer := &kafka.Writer{
+		Addr:         kafka.TCP(cfg.Brokers...),
+		Balancer:     &kafka.Hash{}, // 使用 Hash 负载均衡
+		Compression:  getKafkaCompression(cfg.Producer.Compression),
+		MaxAttempts:  cfg.Producer.RetryMax,
+		BatchSize:    cfg.Producer.BatchSize,
+		BatchTimeout: cfg.Producer.BatchTimeout,
+		ReadTimeout:  cfg.Consumer.ReadTimeout, // 从 broker 读取响应的超时
+		WriteTimeout: cfg.Producer.WriteTimeout,
+		RequiredAcks: getKafkaRequiredAcks(cfg.Producer.RequiredAcks),
+		Async:        false, // 同步模式
+		Transport: &kafka.Transport{
+			TLS:  tlsConfig,
+			SASL: saslMechanism,
+		},
+	}
+
+	// 如果启用幂等性，设置为精确一次语义。
+	if cfg.Producer.IdempotentEnabled {
+		writer.RequiredAcks = kafka.RequireAll
+	}
+	zapLogger.Info(
+		"[synp-ioc-kafka] successfully created kafka writer",
+		zap.Strings("brokers", cfg.Brokers),
+		zap.String("compression", cfg.Producer.Compression),
+		zap.Int("required_acks", cfg.Producer.RequiredAcks),
+		zap.Bool("idempotent", cfg.Producer.IdempotentEnabled),
+	)
+
+	// 创建 ReaderFactory，用于按需创建 Reader ( Consumer )。
+	const (
+		defaultReadBackoffMin = 100 * time.Millisecond
+		defaultReadBackoffMax = 1 * time.Second
+		defaultDialTimeout    = 10 * time.Second
+	)
+	readerFactory := func(topic string, groupId string) *kafka.Reader {
+		reader := kafka.NewReader(kafka.ReaderConfig{
+			Brokers:        cfg.Brokers,
+			Topic:          topic,
+			GroupID:        groupId,
+			MinBytes:       cfg.Consumer.MinBytes,
+			MaxBytes:       cfg.Consumer.MaxBytes,
+			MaxWait:        cfg.Consumer.MaxWait,
+			ReadBackoffMin: defaultReadBackoffMin,
+			ReadBackoffMax: defaultReadBackoffMax,
+			CommitInterval: cfg.Consumer.CommitInterval,
+			StartOffset:    cfg.Consumer.StartOffset,
+			Dialer: &kafka.Dialer{
+				Timeout:       defaultDialTimeout,
+				DualStack:     true,
+				TLS:           tlsConfig,
+				SASLMechanism: saslMechanism,
+			},
+		})
+
+		zapLogger.Info(
+			"[synp-ioc-kafka] created kafka reader",
+			zap.Strings("brokers", cfg.Brokers),
+			zap.String("topic", topic),
+			zap.String("group_id", groupId),
+		)
+
+		return reader
+	}
+
+	// 注册生命周期钩子。
+	lifecycle.Append(fx.Hook{
+		OnStop: func(_ context.Context) error {
+			if err := writer.Close(); err != nil {
+				zapLogger.Error("[synp-ioc-kafka] failed to close kafka writer", zap.Error(err))
+				return fmt.Errorf("failed to close kafka writer: %w", err)
+			}
+			zapLogger.Info("[synp-ioc-kafka] kafka writer closed")
+			return nil
+		},
+	})
+
+	return kafkaFxResult{
+		Writer:           writer,
+		ReaderCreateFunc: readerFactory,
+	}, nil
+}
+
 // loadKafkaConfig 加载 Kafka 配置。
 func loadKafkaConfig() (*kafkaConfig, error) {
 	cfg := &kafkaConfig{}
@@ -200,106 +302,4 @@ func getKafkaRequiredAcks(acks int) kafka.RequiredAcks {
 	default:
 		return kafka.RequireAll
 	}
-}
-
-func newKafkaClient(zapLogger *zap.Logger, lifecycle fx.Lifecycle) (kafkaFxResult, error) {
-	cfg, err := loadKafkaConfig()
-	if err != nil {
-		return kafkaFxResult{}, err
-	}
-
-	// 配置 TLS。
-	tlsConfig, err := configureKafkaTLS(cfg.TLS, zapLogger)
-	if err != nil {
-		return kafkaFxResult{}, err
-	}
-
-	// 配置 SASL。
-	saslMechanism, err := configureKafkaSasl(cfg.SASL, zapLogger)
-	if err != nil {
-		return kafkaFxResult{}, err
-	}
-
-	// 创建 Writer（Producer）。
-	writer := &kafka.Writer{
-		Addr:         kafka.TCP(cfg.Brokers...),
-		Balancer:     &kafka.Hash{}, // 使用 Hash 负载均衡
-		Compression:  getKafkaCompression(cfg.Producer.Compression),
-		MaxAttempts:  cfg.Producer.RetryMax,
-		BatchSize:    cfg.Producer.BatchSize,
-		BatchTimeout: cfg.Producer.BatchTimeout,
-		ReadTimeout:  cfg.Consumer.ReadTimeout, // 从 broker 读取响应的超时
-		WriteTimeout: cfg.Producer.WriteTimeout,
-		RequiredAcks: getKafkaRequiredAcks(cfg.Producer.RequiredAcks),
-		Async:        false, // 同步模式
-		Transport: &kafka.Transport{
-			TLS:  tlsConfig,
-			SASL: saslMechanism,
-		},
-	}
-
-	// 如果启用幂等性，设置为精确一次语义。
-	if cfg.Producer.IdempotentEnabled {
-		writer.RequiredAcks = kafka.RequireAll
-	}
-	zapLogger.Info(
-		"[synp-ioc-kafka] successfully created kafka writer",
-		zap.Strings("brokers", cfg.Brokers),
-		zap.String("compression", cfg.Producer.Compression),
-		zap.Int("required_acks", cfg.Producer.RequiredAcks),
-		zap.Bool("idempotent", cfg.Producer.IdempotentEnabled),
-	)
-
-	// 创建 ReaderFactory，用于按需创建 Reader ( Consumer )。
-	const (
-		defaultReadBackoffMin = 100 * time.Millisecond
-		defaultReadBackoffMax = 1 * time.Second
-		defaultDialTimeout    = 10 * time.Second
-	)
-	readerFactory := func(topic string, groupId string) *kafka.Reader {
-		reader := kafka.NewReader(kafka.ReaderConfig{
-			Brokers:        cfg.Brokers,
-			Topic:          topic,
-			GroupID:        groupId,
-			MinBytes:       cfg.Consumer.MinBytes,
-			MaxBytes:       cfg.Consumer.MaxBytes,
-			MaxWait:        cfg.Consumer.MaxWait,
-			ReadBackoffMin: defaultReadBackoffMin,
-			ReadBackoffMax: defaultReadBackoffMax,
-			CommitInterval: cfg.Consumer.CommitInterval,
-			StartOffset:    cfg.Consumer.StartOffset,
-			Dialer: &kafka.Dialer{
-				Timeout:       defaultDialTimeout,
-				DualStack:     true,
-				TLS:           tlsConfig,
-				SASLMechanism: saslMechanism,
-			},
-		})
-
-		zapLogger.Info(
-			"[synp-ioc-kafka] created kafka reader",
-			zap.Strings("brokers", cfg.Brokers),
-			zap.String("topic", topic),
-			zap.String("group_id", groupId),
-		)
-
-		return reader
-	}
-
-	// 注册生命周期钩子。
-	lifecycle.Append(fx.Hook{
-		OnStop: func(_ context.Context) error {
-			if err := writer.Close(); err != nil {
-				zapLogger.Error("[synp-ioc-kafka] failed to close kafka writer", zap.Error(err))
-				return fmt.Errorf("failed to close kafka writer: %w", err)
-			}
-			zapLogger.Info("[synp-ioc-kafka] kafka writer closed")
-			return nil
-		},
-	})
-
-	return kafkaFxResult{
-		Writer:           writer,
-		ReaderCreateFunc: readerFactory,
-	}, nil
 }

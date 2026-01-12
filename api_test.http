@@ -29,7 +29,7 @@ Content-Type: application/json
 
 
 ### Add Contact Application
-POST {{uri}}/api/v1/user/contact
+POST {{uri}}/api/v1/contact/apply
 x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
 Content-Type: application/json
 
@@ -41,7 +41,7 @@ Content-Type: application/json
 
 
 ### Get Contact Applications
-GET {{uri}}/api/v1/user/contact/applications
+GET {{uri}}/api/v1/contact/applications
 x-access-token: Bearer {{signIn.response.body.$.data.accessToken}}
 Content-Type: application/json
 

@@ -189,7 +189,7 @@ generate_sharding_sql() {
     # 开始生成新的 SQL 文件。
     {
         echo "-- ============================================"
-        echo "-- 分库分表SQL脚本（MySQL版本）"
+        echo "-- 分库分表SQL脚本 ( MySQL 版本 )"
         echo "-- 数据库: $db_name"
         echo "-- 分表数量: $TABLE_COUNT"
         echo "-- 生成时间: $(date '+%Y-%m-%d %H:%M:%S')"
@@ -211,7 +211,7 @@ generate_sharding_sql() {
 
                 echo "-- 分表 $table_idx: $sharded_table_name"
 
-                # 提取该表的完整定义（从 DROP 到对应的 );）。
+                # 提取该表的完整定义 ( 从 DROP 到对应的 ); )。
                 local table_section
                 table_section=$(echo "$content" | awk -v table="$table_name" '
                     /DROP TABLE.*IF.*EXISTS/ {
@@ -303,7 +303,7 @@ process_all_files() {
         exit 1
     fi
 
-    # 查找所有 *_init.sql 文件（ 数据库初始化由参数生成 ）。
+    # 查找所有 *_init.sql 文件 ( 数据库初始化由参数生成 )。
     local sql_files
     sql_files=$(find "$sql_dir" -maxdepth 1 -name "*.sql" -type f | sort)
 
@@ -317,10 +317,9 @@ process_all_files() {
     done <<< "$sql_files"
 }
 
-# 主函数。
 main() {
     echo -e "${GREEN}======================================${NC}"
-    echo -e "${GREEN}分库分表SQL脚本生成工具（MySQL版本）${NC}"
+    echo -e "${GREEN}分库分表SQL脚本生成工具 ( MySQL 版本 )${NC}"
     echo -e "${GREEN}======================================${NC}"
     echo ""
 
@@ -343,6 +342,5 @@ main() {
     echo -e "${GREEN}======================================${NC}"
 }
 
-# 执行主函数。
 main "$@"
 

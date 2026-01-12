@@ -12,36 +12,41 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ xgin.RouteRegistry = (*UserHandler)(nil)
+var _ xgin.RouteRegistry = (*ContactHandler)(nil)
 
-type UserHandler struct {
-	svc    service.UserService
-	logger *zap.Logger
+// ContactHandler 联系人 HTTP Handler。
+type ContactHandler struct {
+	userSvc        service.UserService
+	applicationSvc service.ApplicationService
+	logger         *zap.Logger
 }
 
-func NewUserHandler(svc service.UserService, logger *zap.Logger) *UserHandler {
-	return &UserHandler{
-		svc:    svc,
-		logger: logger,
+func NewContactHandler(userSvc service.UserService, applicationSvc service.ApplicationService, logger *zap.Logger) *ContactHandler {
+	return &ContactHandler{
+		userSvc:        userSvc,
+		applicationSvc: applicationSvc,
+		logger:         logger,
 	}
 }
 
-func (h *UserHandler) Register(engine *gin.Engine) {
-	userV1 := engine.Group("api/v1/user")
+func (h *ContactHandler) Register(engine *gin.Engine) {
+	contactV1 := engine.Group("api/v1/contact")
 
-	userV1.Handle(http.MethodPost, "/contact", xgin.BU(h.ContactApplicant))
-	userV1.Handle(http.MethodGet, "/contact/applications", xgin.U(h.GetContactApplications))
+	contactV1.Handle(http.MethodPost, "/apply", xgin.BU(h.ApplyContact))
+	contactV1.Handle(http.MethodPost, "/review", xgin.BU(h.ReviewApplication))
+
+	contactV1.Handle(http.MethodGet, "/applications", xgin.U(h.GetApplications))
 }
 
-type addContactReq struct {
+type applyContactReq struct {
 	ContactID uint64 `json:"contactId"`
 	Message   string `json:"message"`
 	Source    string `json:"source"` // 添加来源 ( search=搜索添加 / qrcode=扫码添加 / group=群聊添加 )
 }
 
-// ContactApplicant 联系人申请。
+// ApplyContact 联系人申请。
 // 注意：这里只提交联系人申请，不会立即添加联系人。
-func (h *UserHandler) ContactApplicant(ctx *gin.Context, req addContactReq, au xgin.ContextUser) (xgin.R, error) {
+func (h *ContactHandler) ApplyContact(ctx *gin.Context, req applyContactReq, au xgin.ContextUser) (xgin.R, error) {
 	if req.ContactID == au.UID {
 		return xgin.R{}, fmt.Errorf("%w: can not add self as contact", errs.ErrInvalidParam)
 	}
@@ -57,7 +62,7 @@ func (h *UserHandler) ContactApplicant(ctx *gin.Context, req addContactReq, au x
 		Message:     req.Message,
 		Source:      source,
 	}
-	if err := h.svc.ContactApplicant(ctx, event); err != nil {
+	if err := h.applicationSvc.ApplyContact(ctx, event); err != nil {
 		return xgin.R{}, err
 	}
 
@@ -66,7 +71,19 @@ func (h *UserHandler) ContactApplicant(ctx *gin.Context, req addContactReq, au x
 	}, nil
 }
 
-type contactApplicationResp struct {
+type reviewApplicationReq struct {
+	ApplicationID uint64 `json:"applicationId"`
+	Status        string `json:"status"`
+}
+
+// ReviewApplication 审批联系人申请。
+// 审批通过会建立联系人关系 ( 双向映射 )，并发送通知。
+func (h *ContactHandler) ReviewApplication(_ *gin.Context, _ reviewApplicationReq, _ xgin.ContextUser) (xgin.R, error) {
+	// TODO: not implemented
+	panic("not implemented")
+}
+
+type getApplicationsResp struct {
 	ID                 uint64 `json:"id"`
 	ApplicantID        uint64 `json:"applicantId"`
 	ApplicantName      string `json:"applicantName"`
@@ -76,18 +93,18 @@ type contactApplicationResp struct {
 	CreatedAt          int64  `json:"createdAt"`
 }
 
-// GetContactApplications 获取联系人申请。
+// GetApplications 获取联系人申请。
 // 这里是获取向当前登录用户发送的联系人的人申请。
-func (h *UserHandler) GetContactApplications(ctx *gin.Context, au xgin.ContextUser) (xgin.R, error) {
-	applications, err := h.svc.ListContactApplications(ctx, au.UID)
+func (h *ContactHandler) GetApplications(ctx *gin.Context, au xgin.ContextUser) (xgin.R, error) {
+	applications, err := h.applicationSvc.GetContactApplications(ctx, au.UID)
 	if err != nil {
 		return xgin.R{}, err
 	}
 
 	// 转换为响应对象
-	responses := make([]contactApplicationResp, 0, len(applications))
+	responses := make([]getApplicationsResp, 0, len(applications))
 	for i := range applications {
-		responses = append(responses, contactApplicationResp{
+		responses = append(responses, getApplicationsResp{
 			ID:                 applications[i].ID,
 			ApplicantID:        applications[i].ApplicantID,
 			ApplicantName:      applications[i].ApplicantName,

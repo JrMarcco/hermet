@@ -10,6 +10,8 @@ import (
 type ContactApplicationRepo interface {
 	Save(ctx context.Context, application domain.ContactApplication) (domain.ContactApplication, error)
 
+	UpdateStatus(ctx context.Context, applicationID uint64, status domain.ApplicationStatus) error
+
 	ListPendingByTargetID(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error)
 }
 
@@ -31,6 +33,10 @@ func (r *DefaultContactApplicationRepo) Save(ctx context.Context, application do
 		return domain.ContactApplication{}, err
 	}
 	return r.toDomain(entity), nil
+}
+
+func (r *DefaultContactApplicationRepo) UpdateStatus(ctx context.Context, applicationID uint64, status domain.ApplicationStatus) error {
+	return r.contactApplicationDao.UpdateStatus(ctx, applicationID, status)
 }
 
 func (r *DefaultContactApplicationRepo) ListPendingByTargetID(ctx context.Context, targetID uint64) ([]domain.ContactApplication, error) {

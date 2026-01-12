@@ -17,7 +17,7 @@
 
 set -e
 
-# 默认配置
+# 默认配置。
 DB_TYPE=""
 DB_HOST="localhost"
 DB_PORT=""
@@ -28,14 +28,14 @@ SQL_DIR=""
 SQL_FILE=""
 DRY_RUN=false
 
-# 颜色输出
+# 颜色输出。
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 显示帮助信息
+# 显示帮助信息。
 show_help() {
     cat << EOF
 SQL 脚本批量执行工具
@@ -74,7 +74,7 @@ SQL 脚本批量执行工具
 EOF
 }
 
-# 解析命令行参数
+# 解析命令行参数。
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -127,9 +127,9 @@ parse_args() {
     done
 }
 
-# 验证参数
+# 验证参数。
 validate_args() {
-    # 验证数据库类型
+    # 验证数据库类型。
     if [[ -z "$DB_TYPE" ]]; then
         echo -e "${RED}错误: 必须指定数据库类型 -t/--db-type${NC}"
         echo ""
@@ -142,7 +142,7 @@ validate_args() {
         exit 1
     fi
 
-    # 设置默认端口
+    # 设置默认端口。
     if [[ -z "$DB_PORT" ]]; then
         if [[ "$DB_TYPE" == "mysql" ]]; then
             DB_PORT=3306
@@ -151,19 +151,19 @@ validate_args() {
         fi
     fi
 
-    # 验证用户名
+    # 验证用户名。
     if [[ -z "$DB_USER" ]]; then
         echo -e "${RED}错误: 必须指定数据库用户名 -u/--user${NC}"
         exit 1
     fi
 
-    # 验证数据库名
+    # 验证数据库名。
     if [[ -z "$DB_NAME" ]]; then
         echo -e "${RED}错误: 必须指定数据库名 -d/--database${NC}"
         exit 1
     fi
 
-    # 验证SQL目录或文件
+    # 验证SQL目录或文件。
     if [[ -z "$SQL_DIR" ]] && [[ -z "$SQL_FILE" ]]; then
         echo -e "${RED}错误: 必须指定 SQL 文件目录 -D/--directory 或单个文件 -f/--file${NC}"
         exit 1
@@ -184,7 +184,7 @@ validate_args() {
         exit 1
     fi
 
-    # 检查数据库客户端是否安装
+    # 检查数据库客户端是否安装。
     if [[ "$DB_TYPE" == "mysql" ]]; then
         if ! command -v mysql &> /dev/null; then
             echo -e "${RED}错误: 未找到 mysql 客户端，请先安装${NC}"
@@ -197,14 +197,14 @@ validate_args() {
         fi
     fi
 
-    # 如果没有提供密码，提示输入
+    # 如果没有提供密码，提示输入。
     if [[ -z "$DB_PASSWORD" ]] && [[ "$DRY_RUN" == false ]]; then
         read -s -p "请输入数据库密码: " DB_PASSWORD
         echo ""
     fi
 }
 
-# 测试数据库连接
+# 测试数据库连接。
 test_connection() {
     echo -e "${YELLOW}测试数据库连接...${NC}"
 
@@ -227,7 +227,7 @@ test_connection() {
     fi
 }
 
-# 执行单个SQL文件
+# 执行单个SQL文件。
 execute_sql_file() {
     local sql_file="$1"
     local file_name
@@ -268,11 +268,11 @@ execute_sql_file() {
     fi
 }
 
-# 执行目录下所有SQL文件
+# 执行目录下所有SQL文件。
 execute_sql_directory() {
     local sql_dir="$1"
 
-    # 查找所有 .sql 文件并排序
+    # 查找所有 .sql 文件并排序。
     local sql_files
     sql_files=$(find "$sql_dir" -maxdepth 1 -name "*.sql" -type f | sort)
 
@@ -309,7 +309,6 @@ execute_sql_directory() {
     return $failed
 }
 
-# 主函数
 main() {
     echo -e "${GREEN}======================================${NC}"
     echo -e "${GREEN}SQL 脚本批量执行工具${NC}"
@@ -319,7 +318,7 @@ main() {
     parse_args "$@"
     validate_args
 
-    # 显示配置信息
+    # 显示配置信息。
     echo "执行配置:"
     echo "  数据库类型: $DB_TYPE"
     echo "  主机: $DB_HOST"
@@ -336,7 +335,7 @@ main() {
     fi
     echo ""
 
-    # 测试连接（非 dry-run 模式）
+    # 测试连接 ( 非 dry-run 模式 )。
     if [[ "$DRY_RUN" == false ]]; then
         if ! test_connection; then
             echo -e "${RED}请检查数据库连接参数${NC}"
@@ -345,7 +344,7 @@ main() {
         echo ""
     fi
 
-    # 执行SQL
+    # 执行SQL。
     local start_time
     start_time=$(date +%s)
 
@@ -373,6 +372,5 @@ main() {
     exit $failed
 }
 
-# 执行主函数
 main "$@"
 

@@ -86,14 +86,17 @@ func (d *DefaultBizUserDao) Save(ctx context.Context, user BizUser) (BizUser, er
 func (d *DefaultBizUserDao) FindByID(ctx context.Context, id uint64) (BizUser, error) {
 	var user BizUser
 
-	dst := d.shardHelper.DstFromID(id)
+	dst, err := d.shardHelper.DstFromID(id)
+	if err != nil {
+		return BizUser{}, fmt.Errorf("failed to get shard destination from id [ %d ]", id)
+	}
 
 	db, ok := d.dbs.Load(dst.DB)
 	if !ok {
 		return BizUser{}, fmt.Errorf("failed to load database [ %s ]", dst.DB)
 	}
 
-	err := db.WithContext(ctx).Table(dst.TB).Model(&BizUser{}).
+	err = db.WithContext(ctx).Table(dst.TB).Model(&BizUser{}).
 		Where("id = ?", id).
 		Where("deleted_at = 0").
 		First(&user).Error

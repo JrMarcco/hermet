@@ -174,7 +174,8 @@ func TestBizUserIdGeneration_RealScenario(t *testing.T) {
 
 	// 场景 2：查询用户 ( 只有 user_id )。
 	// 从 ID 中提取分片信息。
-	queryDst := helper.DstFromID(userID)
+	queryDst, err := helper.DstFromID(userID)
+	require.NoError(t, err)
 
 	t.Logf("User query:")
 	t.Logf("  User ID: %d", userID)

@@ -37,6 +37,8 @@ type ContactApplication struct {
 type ContactApplicationDao interface {
 	Save(ctx context.Context, ca ContactApplication) (ContactApplication, error)
 
+	UpdateStatus(ctx context.Context, applicationID uint64, status domain.ApplicationStatus) error
+
 	ListPendingByTargetID(ctx context.Context, targetID uint64) ([]ContactApplication, error)
 }
 
@@ -73,6 +75,23 @@ func (d *DefaultContactApplicationDao) Save(ctx context.Context, ca ContactAppli
 
 	err = db.WithContext(ctx).Table(dst.TB).Model(&ContactApplication{}).Create(&ca).Error
 	return ca, err
+}
+
+func (d *DefaultContactApplicationDao) UpdateStatus(ctx context.Context, applicationID uint64, status domain.ApplicationStatus) error {
+	dst, err := d.shardHelper.DstFromID(applicationID)
+	if err != nil {
+		return fmt.Errorf("failed to get shard destination from id [ %d ]", applicationID)
+	}
+
+	db, ok := d.dbs.Load(dst.DB)
+	if !ok {
+		return fmt.Errorf("failed to load database [ %s ]", dst.DB)
+	}
+
+	err = db.WithContext(ctx).Table(dst.TB).Model(&ContactApplication{}).
+		Where("id = ?", applicationID).
+		Update("application_status", string(status)).Error
+	return err
 }
 
 func (d *DefaultContactApplicationDao) ListPendingByTargetID(ctx context.Context, targetID uint64) ([]ContactApplication, error) {

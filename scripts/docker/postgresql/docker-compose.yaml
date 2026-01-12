@@ -9,19 +9,6 @@ networks:
     external: true
 
 services:
-  pgsql-jrmarcco:
-    <<: *postgresql-common
-    container_name: pgsql-jrmarcco
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-jrmarcco}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-<passwd>}
-    volumes:
-      - ./jrmarcco-data:/var/lib/postgresql/data
-    networks:
-      - jrmarcco_net
-
   pgsql-hermet-0:
     <<: *postgresql-common
     container_name: pgsql-hermet-0

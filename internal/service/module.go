@@ -16,6 +16,11 @@ var ServiceFxModule = fx.Module(
 			NewDefaultUserService,
 			fx.As(new(UserService)),
 		),
+
+		fx.Annotate(
+			NewDefaultApplicationService,
+			fx.As(new(ApplicationService)),
+		),
 	),
 )
 

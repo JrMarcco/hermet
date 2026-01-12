@@ -97,7 +97,7 @@ func (s *ShardHelper) Shard(sharder Sharder) (Dst, error) {
 
 // DstFromID 从 ID 中提取分片信息。
 // 适用于根据已有 ID 查询数据的场景。
-func (s *ShardHelper) DstFromID(id uint64) Dst {
+func (s *ShardHelper) DstFromID(id uint64) (Dst, error) {
 	return s.strategy.DstFromID(id)
 }
 
@@ -106,7 +106,7 @@ func (s *ShardHelper) DstFromSharder(sharder Sharder) (Dst, error) {
 	if err != nil {
 		return Dst{}, err
 	}
-	return s.strategy.DstFromShardVal(shardVal), nil
+	return s.strategy.DstFromShardVal(shardVal)
 }
 
 // Broadcast 返回所有分片的目标列表。

@@ -208,7 +208,7 @@ generate_sharding_sql() {
         echo "-- ============================================"
         echo ""
 
-        # 处理 TYPE 定义（ 只需要定义一次，所有分表共享 ）。
+        # 处理 TYPE 定义 ( 只需要定义一次，所有分表共享 )。
         if [[ -n "$type_names" ]]; then
             echo "-- ============================================"
             echo "-- 枚举类型定义"
@@ -238,7 +238,7 @@ generate_sharding_sql() {
 
                 echo "-- 分表 $table_idx: $sharded_table_name"
 
-                # 提取该表的完整定义（从 DROP 到对应的 );）。
+                # 提取该表的完整定义 ( 从 DROP 到对应的 ); )。
                 local table_section
                 table_section=$(echo "$content" | awk -v table="$table_name" '
                     /DROP TABLE.*IF EXISTS/ {
@@ -353,7 +353,6 @@ process_all_files() {
     done <<< "$sql_files"
 }
 
-# 主函数。
 main() {
     echo -e "${GREEN}======================================${NC}"
     echo -e "${GREEN}分库分表SQL脚本生成工具${NC}"
@@ -379,6 +378,5 @@ main() {
     echo -e "${GREEN}======================================${NC}"
 }
 
-# 执行主函数。
 main "$@"
 

@@ -220,7 +220,8 @@ func TestModuloSharding_DstFromId(t *testing.T) {
 		id, err := gen.NextID(shardVal)
 		require.NoError(t, err)
 
-		actualDst := strategy.DstFromID(id)
+		actualDst, err := strategy.DstFromID(id)
+		require.NoError(t, err)
 
 		if actualDst.DB != expectedDst.DB || actualDst.TB != expectedDst.TB {
 			t.Errorf(

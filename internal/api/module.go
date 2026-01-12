@@ -15,7 +15,7 @@ var APIFxModule = fx.Module(
 		),
 
 		fx.Annotate(
-			NewUserHandler,
+			NewContactHandler,
 			fx.As(new(xgin.RouteRegistry)),
 			fx.ResultTags(`group:"api_registry"`),
 		),

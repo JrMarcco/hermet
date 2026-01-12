@@ -108,7 +108,9 @@ func TestShardHelper_NextIdAndShard(t *testing.T) {
 	}
 
 	// 验证从 ID 能正确提取分片信息。
-	dstFromID := helper.DstFromID(id)
+	dstFromID, err := helper.DstFromID(id)
+	require.NoError(t, err)
+
 	if dstFromID.DB != dst.DB || dstFromID.TB != dst.TB {
 		t.Errorf(
 			"DstFromId() = %v.%v, want %v.%v",
@@ -243,8 +245,10 @@ func TestShardHelper_Consistency(t *testing.T) {
 	}
 
 	// 验证从 ID 提取的分片信息正确。
-	dstFromID1 := helper1.DstFromID(id1)
-	dstFromID2 := helper2.DstFromID(id2)
+	dstFromID1, err := helper1.DstFromID(id1)
+	require.NoError(t, err)
+	dstFromID2, err := helper2.DstFromID(id2)
+	require.NoError(t, err)
 
 	if dstFromID1.DB != dst1.DB || dstFromID1.TB != dst1.TB {
 		t.Error("DstFromId inconsistent with original Dst for helper1")

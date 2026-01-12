@@ -28,12 +28,12 @@ type Strategy interface {
 	// 这对于根据已有 ID 查询数据非常有用，无需额外的分片信息。
 	// id: 包含分片信息的 ID ( 如 Snowflake 生成的 ID )。
 	// 返回: 目标数据库和表的信息。
-	DstFromID(id uint64) Dst
+	DstFromID(id uint64) (Dst, error)
 
 	// DstFromShardVal 根据分片值计算分库分表目标。
 	// shardVal: 分片值。
 	// 返回: 目标数据库和表的信息。
-	DstFromShardVal(shardVal uint64) Dst
+	DstFromShardVal(shardVal uint64) (Dst, error)
 
 	// Broadcast 返回所有分库分表的目标列表 ( 用于广播查询 )。
 	// 适用场景：需要在所有分片上执行查询的操作 ( 如全量扫描、统计等 )。

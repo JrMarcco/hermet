@@ -69,11 +69,11 @@ func (s *BalancedSharding) Shard(shardVal uint64) (Dst, error) {
 	return s.base.Shard(shardVal)
 }
 
-func (s *BalancedSharding) DstFromID(id uint64) Dst {
+func (s *BalancedSharding) DstFromID(id uint64) (Dst, error) {
 	return s.base.DstFromID(id)
 }
 
-func (s *BalancedSharding) DstFromShardVal(shardVal uint64) Dst {
+func (s *BalancedSharding) DstFromShardVal(shardVal uint64) (Dst, error) {
 	return s.base.DstFromShardVal(shardVal)
 }
 

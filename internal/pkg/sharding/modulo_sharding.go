@@ -94,12 +94,12 @@ func (s *ModuloSharding) Shard(shardVal uint64) (Dst, error) {
 	}, nil
 }
 
-func (s *ModuloSharding) DstFromID(id uint64) Dst {
+func (s *ModuloSharding) DstFromID(id uint64) (Dst, error) {
 	shardVal := s.extractor.ExtractShardVal(id)
 	return s.DstFromShardVal(shardVal)
 }
 
-func (s *ModuloSharding) DstFromShardVal(shardVal uint64) Dst {
+func (s *ModuloSharding) DstFromShardVal(shardVal uint64) (Dst, error) {
 	totalShards := s.dbShardCount * s.tbShardCount
 	shardIndex := shardVal % totalShards
 
@@ -111,7 +111,7 @@ func (s *ModuloSharding) DstFromShardVal(shardVal uint64) Dst {
 		TBSuffix: tbSuffix,
 		DB:       fmt.Sprintf("%s_%d", s.dbPrefix, dbSuffix),
 		TB:       fmt.Sprintf("%s_%d", s.tbPrefix, tbSuffix),
-	}
+	}, nil
 }
 
 func (s *ModuloSharding) Broadcast() []Dst {
