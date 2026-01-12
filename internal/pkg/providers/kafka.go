@@ -20,8 +20,8 @@ import (
 type kafkaFxResult struct {
 	fx.Out
 
-	Writer           *kafka.Writer
-	ReaderCreateFunc consumer.KafkaReaderCreateFunc
+	Writer           *kafka.Writer                  `name:"ws_kafka_writer"`
+	ReaderCreateFunc consumer.KafkaReaderCreateFunc `name:"ws_kafka_reader_create_func"`
 }
 
 type kafkaConfig struct {
